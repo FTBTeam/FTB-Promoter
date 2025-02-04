@@ -94,7 +94,6 @@ dependencies {
         implementation "libs:rgp_client:1.0.6"
     }
 
-    implementation "dev.ftb.mods:ftb-library-neoforge:2101.1.8"
     implementation "curse.maven:fancymenu-367706:5823966"
 
     // Deps
@@ -146,27 +145,88 @@ idea {
     }
 }
 
-//publishMods {
-//    dryRun = providers.environmentVariable("CURSEFORGE_KEY").getOrNull() == null
-//    changelog = createChangelog(project)
-//    version = "${mod_version}"
-//    file = project.provider { project(":$projectName").tasks.remapJar }.flatMap { it.archiveFile }
-//
-//    // TODO: Migrate to something else
-//    def tag = providers.environmentVariable("TAG").getOrElse("release")
-//    type = STABLE
-//
-//    curseforge {
-//        displayName = "[${projectName.toUpperCase()}][${minecraft_version}] ${readable_name} ${mod_version}"
-//        modLoaders.add("neoforge")
-//
-//        accessToken = providers.environmentVariable("CURSEFORGE_KEY")
-//        minecraftVersions.add("${minecraft_version}")
-//
-//        projectId = curseforge_id_forge
-//        requires('architectury-api')
-//        requires('ftb-library-forge')
-//        requires('ftb-teams-forge')
-//        optional('ftb-xmod-compat')
-//    }
-//}
+def createChangelog() {
+    def commitHistory = file("COMMIT_HISTORY")
+    if (!commitHistory.exists()) {
+        return ""
+    }
+
+    def line = commitHistory.readLines()
+    Map<String, List<String>> changes = [
+        "added"  : [],
+        "fixed"  : [],
+        "changed": [],
+        "removed": [],
+    ]
+
+    def reading = false
+    for (def commit : line) {
+        if (commit.startsWith("Date:")) {
+            reading = true
+            continue
+        }
+
+        if (commit.startsWith("commit")) {
+            reading = false
+            continue
+        }
+
+        if (!reading) {
+            continue
+        }
+
+        commit = commit.trim()
+        if (commit.empty) {
+            continue
+        }
+
+        if (commit.startsWith("feat: ")) changes.get("added") << commit.substring(6)
+        if (commit.startsWith("fix: ")) changes.get("fixed") << commit.substring(5)
+        if (commit.startsWith("chore: ")) changes.get("changed") << commit.substring(7)
+        if (commit.startsWith("refactor: ")) changes.get("changed") << commit.substring(10)
+        if (commit.startsWith("removed: ")) changes.get("removed") << commit.substring(9)
+    }
+
+    def changelog = ""
+    def changesKeys = changes.keySet()
+    for (def key : changesKeys) {
+        def changeList = changes[key]
+        if (changeList.size() > 0) {
+            changelog += "### ${key.capitalize()}\n\n"
+            for (def change : changeList) {
+                // Titlecase the change
+                change = change.substring(0, 1).toUpperCase() + change.substring(1)
+                changelog += "- $change\n"
+            }
+        }
+
+        changelog += "\n"
+    }
+
+    def output = changelog.trim()
+    if (output.empty) {
+        return "No changelog provided"
+    }
+
+    return output
+}
+
+publishMods {
+    dryRun = true
+    changelog = createChangelog()
+    file = jar.archiveFile
+    displayName = "[NEOFORGE] FTB Promoter ${project.version}"
+    modLoaders.add("neoforge")
+
+    type = STABLE
+
+    curseforge {
+        accessToken = providers.environmentVariable("CURSEFORGE_KEY")
+        minecraftVersions.add(minecraft_version)
+
+        projectId = curseforge_id
+
+        optional('fancymenu')
+        optional('bisecthosting-server-integration-menu-neoforge')
+    }
+}

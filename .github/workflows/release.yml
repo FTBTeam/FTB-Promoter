@@ -1,0 +1,56 @@
+name: Java CI - Build Release
+
+on:
+  push:
+    branches:
+      - main
+      - "[0-9]+\.[0-9]+/main"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: |
+      !contains(github.event.head_commit.message, '[ciskip]')
+    steps:
+      - name: Clone project
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "microsoft"
+          java-version: 21
+      - name: Fix borked permissions
+        run: chmod +x ./gradlew
+      - name: Get minecraft version
+        run: |
+          export MC_VERSION=$(grep ^minecraft_version= ./gradle.properties | cut -d= -f2)
+          if [ -z "$MC_VERSION" ]; then
+              echo "Could not find minecraft_version in gradle.properties"
+              exit 1
+          fi
+      - name: Pull meta data
+        run: |
+          export LAST_HASH=$((curl https://api.feed-the-beast.com/versions/mods/ftb-promoter/${MC_VERSION} | jq -r -e .hash) || git rev-list HEAD | tail -n 1)
+          git log --pretty=full $LAST_HASH..HEAD >> COMMIT_HISTORY
+      - name: Download FTB Worlds
+        run: |
+          mkdir -p libs
+          curl -o libs/rgp_client-1.0.6.jar https://cdn.feed-the-beast.com/ephemeral/rgp_client-1.0.6.jar
+      - name: Setup Gradle and Validate Wrapper
+        uses: gradle/actions/setup-gradle@v4
+        with:
+         cache-read-only: false
+      - name: Run gradle tasks
+        run: ./gradlew build publishMods publish
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+          FTB_MAVEN_TOKEN: ${{ secrets.FTB_MAVEN_TOKEN }}
+          CURSEFORGE_KEY: ${{ secrets.CURSEFORGE_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update Meta info
+        # Get the current commit hash and push it against the minecraft version
+        run: |
+          export CURRENT_HASH=$(git rev-parse HEAD)
+          curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${{ secrets.META_TOKEN }}" -d "{\"hash\":\"$CURRENT_HASH\"}" https://api.feed-the-beast.com/versions/mods/ftb-promoter/${MC_VERSION}
