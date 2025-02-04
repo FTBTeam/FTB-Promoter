@@ -1,0 +1,172 @@
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+    id 'idea'
+    id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.8"
+    id 'net.neoforged.moddev' version '2.0.76'
+    id "me.modmuss50.mod-publish-plugin" version "0.8.3"
+}
+
+group = 'dev.ftb.mods'
+version = '21.1'
+
+def buildNumber = project.providers.environmentVariable("BUILD_NUMBER").getOrElse("0-dev.1")
+version = version + "." + buildNumber
+
+base {
+    archivesName = mod_id
+}
+
+apply from: "https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/publishing.gradle"
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}
+
+neoForge {
+    version = project.mod_loader_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+     accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+repositories {
+    mavenCentral()
+    maven {
+        url = "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+    maven {
+        url = "https://maven.ftb.dev/releases"
+        content {
+            includeGroup("dev.ftb.mods")
+        }
+    }
+    maven {
+        url = "https://maven.architectury.dev"
+        content {
+            includeGroup("dev.architectury")
+        }
+    }
+    // flatfile libs
+    flatDir(dir: 'libs')
+}
+
+dependencies {
+    implementation "curse.maven:bisecthosting-server-integration-menu-neoforge-1084468:5762091"
+
+    // Needs to be pulled into the dev env
+    if (project.file("libs/").exists()) {
+        implementation "libs:rgp_client:1.0.6"
+    }
+
+    implementation "dev.ftb.mods:ftb-library-neoforge:2101.1.8"
+    implementation "curse.maven:fancymenu-367706:5823966"
+
+    // Deps
+    runtimeOnly "curse.maven:konkrete-410295:5453385"
+    runtimeOnly "curse.maven:melody-938643:5453382"
+}
+
+processResources {
+    var replaceProperties = [
+            mod_version: project.version,
+            minecraft_version      : project.properties.minecraft_version,
+            minecraft_version_range: project.properties.minecraft_version_range,
+            neo_version            : project.properties.mod_loader_version,
+            neo_version_range      : project.properties.mod_loader_version_range,
+            loader_version_range   : project.properties.loader_version_range,
+    ]
+
+    inputs.properties replaceProperties
+
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand replaceProperties
+    }
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+
+    repositories {
+        if (ftbPublishing.ftbToken) {
+            maven {
+                url ftbPublishing.ftbURL
+                credentials {
+                    username = ftbPublishing.ftbUser
+                    password = ftbPublishing.ftbToken
+                }
+            }
+        }
+    }
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
+
+//publishMods {
+//    dryRun = providers.environmentVariable("CURSEFORGE_KEY").getOrNull() == null
+//    changelog = createChangelog(project)
+//    version = "${mod_version}"
+//    file = project.provider { project(":$projectName").tasks.remapJar }.flatMap { it.archiveFile }
+//
+//    // TODO: Migrate to something else
+//    def tag = providers.environmentVariable("TAG").getOrElse("release")
+//    type = STABLE
+//
+//    curseforge {
+//        displayName = "[${projectName.toUpperCase()}][${minecraft_version}] ${readable_name} ${mod_version}"
+//        modLoaders.add("neoforge")
+//
+//        accessToken = providers.environmentVariable("CURSEFORGE_KEY")
+//        minecraftVersions.add("${minecraft_version}")
+//
+//        projectId = curseforge_id_forge
+//        requires('architectury-api')
+//        requires('ftb-library-forge')
+//        requires('ftb-teams-forge')
+//        optional('ftb-xmod-compat')
+//    }
+//}

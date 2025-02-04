@@ -1,0 +1,32 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="ARR"
+
+[[mods]]
+modId="ftbpromoter"
+version="${mod_version}"
+displayName="FTB Promoter"
+authors="FTB Team" #optional
+# The description text for the mod (multi line!) )
+description='''
+Promotes our partners via GUI hits in-game.
+'''
+
+side="CLIENT"
+
+[[mixins]]
+config="ftbpromoter.mixins.json"
+
+[[dependencies.ftbpromoter]]
+    modId="neoforge"
+    required=true
+    versionRange="${neo_version_range}"
+    ordering="NONE"
+    side="CLIENT"
+
+[[dependencies.ftbpromoter]]
+    modId="minecraft"
+    required=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="CLIENT"

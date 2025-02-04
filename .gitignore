@@ -1,0 +1,9 @@
+server/
+run/
+logs/
+libs/
+.idea/
+build/
+
+.DS_Store
+.gradle
