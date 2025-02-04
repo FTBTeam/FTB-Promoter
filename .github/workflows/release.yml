@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - "[0-9]+\.[0-9]+/main"
+      - "[0-9]+.[0-9]+/main"
 
 jobs:
   build:
@@ -30,10 +30,20 @@ jobs:
               echo "Could not find minecraft_version in gradle.properties"
               exit 1
           fi
+          echo "$MC_VERSION" >> GITHUB_ENV
+          echo "Minecraft version is $MC_VERSION"
       - name: Pull meta data
+        env:
+          MC_VERSION: ${{ env.MC_VERSION }}
+        # Get the latest hash from the API for this mc version or default to the first commit on this branch
         run: |
-          export LAST_HASH=$((curl https://api.feed-the-beast.com/versions/mods/ftb-promoter/${MC_VERSION} | jq -r -e .hash) || git rev-list HEAD | tail -n 1)
-          git log --pretty=full $LAST_HASH..HEAD >> COMMIT_HISTORY
+          export LAST_HASH=$(curl https://api.feed-the-beast.com/v1/meta/versions/mods/ftb-promoter/${MC_VERSION} | jq -r -e .hash)
+          if [ -z "$LAST_HASH" ] || [ "$LAST_HASH" == "null" ]; then
+              echo "No hash found for $MC_VERSION, defaulting to first commit on this branch"
+              export LAST_HASH=$(git rev-list --max-parents=0 HEAD)
+          fi
+          echo "Last hash is $LAST_HASH"
+          git log --format=full $LAST_HASH..HEAD > COMMIT_HISTORY
       - name: Download FTB Worlds
         run: |
           mkdir -p libs
@@ -53,4 +63,4 @@ jobs:
         # Get the current commit hash and push it against the minecraft version
         run: |
           export CURRENT_HASH=$(git rev-parse HEAD)
-          curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${{ secrets.META_TOKEN }}" -d "{\"hash\":\"$CURRENT_HASH\"}" https://api.feed-the-beast.com/versions/mods/ftb-promoter/${MC_VERSION}
+          curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${{ secrets.META_TOKEN }}" -d "{\"hash\":\"$CURRENT_HASH\"}" https://api.feed-the-beast.com/v1/meta/versions/mods/ftb-promoter/${MC_VERSION}
