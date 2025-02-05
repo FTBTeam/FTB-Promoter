@@ -92,6 +92,7 @@ dependencies {
     // Needs to be pulled into the dev env
     if (project.file("libs/").exists()) {
         implementation "libs:rgp_client:1.0.6"
+        runtimeOnly "dev.ftb.mods:ftb-library-neoforge:2101.1.8"
     }
 
     implementation "curse.maven:fancymenu-367706:5823966"
@@ -217,16 +218,18 @@ def createChangelog() {
 }
 
 publishMods {
-    dryRun = true
+    def cfToken = providers.environmentVariable("CURSEFORGE_KEY")
+
+    dryRun = !cfToken.isPresent()
     changelog = createChangelog()
     file = jar.archiveFile
     displayName = "[NEOFORGE] FTB Promoter ${project.version}"
     modLoaders.add("neoforge")
 
-    type = STABLE
+    type = stability == "alpha" ? ALPHA : (stability == "beta" ? BETA : STABLE)
 
     curseforge {
-        accessToken = providers.environmentVariable("CURSEFORGE_KEY")
+        accessToken = cfToken.isPresent() ? cfToken.get() : ""
         minecraftVersions.add(minecraft_version)
 
         projectId = curseforge_id
