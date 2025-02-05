@@ -61,6 +61,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update Meta info
         # Get the current commit hash and push it against the minecraft version
+        env:
+          MC_VERSION: ${{ env.MC_VERSION }}
         run: |
           export CURRENT_HASH=$(git rev-parse HEAD)
           curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${{ secrets.META_TOKEN }}" -d "{\"hash\":\"$CURRENT_HASH\"}" https://api.feed-the-beast.com/v1/meta/versions/mods/ftb-promoter/${MC_VERSION}
