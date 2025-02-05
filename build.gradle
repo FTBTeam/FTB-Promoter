@@ -151,9 +151,6 @@ def createChangelog() {
         return ""
     }
 
-    println("History file: " + commitHistory)
-    println(commitHistory.text)
-
     def line = commitHistory.readLines()
     Map<String, List<String>> changes = [
         "added"  : [],
@@ -164,7 +161,7 @@ def createChangelog() {
 
     def reading = false
     for (def commit : line) {
-        if (commit.startsWith("Date:")) {
+        if (commit.startsWith("Commit:")) {
             reading = true
             continue
         }

@@ -65,4 +65,5 @@ jobs:
           MC_VERSION: ${{ env.MC_VERSION }}
         run: |
           export CURRENT_HASH=$(git rev-parse HEAD)
-          curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${{ secrets.META_TOKEN }}" -d "{\"hash\":\"$CURRENT_HASH\"}" https://api.feed-the-beast.com/v1/meta/versions/mods/ftb-promoter/${MC_VERSION}
+          echo "Pushing hash $CURRENT_HASH to $MC_VERSION"
+          curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${{ secrets.META_TOKEN }}" -d "{\"hash\":\"$CURRENT_HASH\"}" https://api.feed-the-beast.com/v1/meta/versions/mods/ftb-promoter/$MC_VERSION
