@@ -30,7 +30,7 @@ jobs:
               echo "Could not find minecraft_version in gradle.properties"
               exit 1
           fi
-          echo "$MC_VERSION" >> GITHUB_ENV
+          echo "$MC_VERSION" >> $GITHUB_ENV
           echo "Minecraft version is $MC_VERSION"
       - name: Pull meta data
         env:

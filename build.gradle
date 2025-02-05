@@ -196,6 +196,11 @@ def createChangelog() {
             for (def change : changeList) {
                 // Titlecase the change
                 change = change.substring(0, 1).toUpperCase() + change.substring(1)
+                change = change.trim()
+                if (change.split(" ").size() == 1) {
+                    // Skip single word changes as these almost always are not useful
+                    continue
+                }
                 changelog += "- $change\n"
             }
         }
