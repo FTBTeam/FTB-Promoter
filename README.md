@@ -16,7 +16,7 @@ FTB Promoter is a simple, client-only, mod designed to provide, clean and unobtr
 
 ## Licence
 
-All Rights Reserved to Feed The Beast Ltd. Source code is `visiable source`, please see our [LICENSE.md](/LICENSE.md) for more information. Any Pull Requests made to this mod must have the CLA (Contributor Licence Agreement) signed and agreed to before the request will be considered.
+All Rights Reserved to Feed The Beast Ltd. Source code is `visible source`, please see our [LICENSE.md](/LICENSE.md) for more information. Any Pull Requests made to this mod must have the CLA (Contributor Licence Agreement) signed and agreed to before the request will be considered.
 
 ## Keep up to date
 
