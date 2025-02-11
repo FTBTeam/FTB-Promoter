@@ -139,7 +139,7 @@ public class AdScreen extends Screen {
         public PromoDataHolder(PromoData data) {
             this.data = data;
             this.logo = new RemoteTexture(URI.create(data.logo()), data.uuid().toString() + data.logoVersion(), Minecraft.getInstance().getTextureManager());
-            this.description = MultiLineLabel.create(Minecraft.getInstance().font, Component.literal(data.description()), 150);
+            this.description = MultiLineLabel.create(Minecraft.getInstance().font, Component.literal(data.description()), 140);
         }
 
         public PromoData getData() {
