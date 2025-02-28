@@ -40,7 +40,11 @@ jobs:
           export LAST_HASH=$(curl https://api.feed-the-beast.com/v1/meta/versions/mods/ftb-promoter/${MC_VERSION} | jq -r -e .hash)
           if [ -z "$LAST_HASH" ] || [ "$LAST_HASH" == "null" ]; then
               echo "No hash found for $MC_VERSION, defaulting to first commit on this branch"
-              export LAST_HASH=$(git rev-list --max-parents=0 HEAD)
+          
+              # Pull the `first_commit=` from the gradle.properties file
+              FIRST_COMMIT=$(grep ^first_commit= ./gradle.properties | cut -d= -f2)
+          
+              export LAST_HASH=$FIRST_COMMIT
           fi
           echo "Last hash is $LAST_HASH"
           git log --format=full $LAST_HASH..HEAD > COMMIT_HISTORY
