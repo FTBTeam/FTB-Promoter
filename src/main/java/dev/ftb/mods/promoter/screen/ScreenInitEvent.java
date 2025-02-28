@@ -1,11 +1,12 @@
 package dev.ftb.mods.promoter.screen;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.ftb.mods.promoter.api.InfoFetcher;
 import dev.ftb.mods.promoter.api.PromoData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
@@ -74,16 +75,22 @@ public class ScreenInitEvent {
         }
 
         @Override
-        public void render(GuiGraphics guiGraphics, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovering, float partialTick) {
+        public void render(PoseStack stack, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovering, float partialTick) {
             var halfWidth = width / 2;
 
             if (isMouseOver(mouseX, mouseY)) {
-                guiGraphics.fill(left - 2, top, left + width - 4, top + height, 0x30FFFFFF);
+                GuiComponent.fill(stack, left - 2, top, left + width - 4, top + height, 0x30FFFFFF);
             }
 
             int leftOffset = 0;
             for (EntryOption option : options) {
-                option.render(guiGraphics, left + leftOffset, top, mouseX, mouseY, options.size() == 1 ? width : halfWidth, height);
+                option.render(stack, left + leftOffset, top, mouseX, mouseY, options.size() == 1 ? width : halfWidth, height);
+                leftOffset += halfWidth;
+            }
+
+            leftOffset = 0;
+            for (EntryOption option : options) {
+                option.renderToolTips(stack, left + leftOffset, top, mouseX, mouseY, options.size() == 1 ? width : halfWidth, height);
                 leftOffset += halfWidth;
             }
         }
@@ -96,6 +103,8 @@ public class ScreenInitEvent {
 
         private final List<Component> entryTooltipLines;
         private final List<Component> announcementTooltipLines;
+
+        boolean isOverAnnouncement = false;
 
         private EntryOption(
                 ServerPromotionEntry parent,
@@ -124,38 +133,43 @@ public class ScreenInitEvent {
             return components;
         }
 
-        public void render(GuiGraphics graphics, int x, int y, int mouseX, int mouseY, int width, int height) {
-            graphics.drawString(Minecraft.getInstance().font, data.name(), x + 35, y + 2, 0xFFFFFF);
+        public void render(PoseStack stack, int x, int y, int mouseX, int mouseY, int width, int height) {
+            GuiComponent.drawString(stack, Minecraft.getInstance().font, data.name(), x + 35, y + 2, 0xFFFFFF);
 
             if (data.lineOneSubtitle() != null && !data.lineOneSubtitle().isEmpty()) {
-                var pose = graphics.pose();
-                pose.pushPose();
-                pose.translate(x + 35, y + 14, 0);
-                pose.scale(0.75f, 0.75f, 0.75f);
-                graphics.drawString(Minecraft.getInstance().font, data.lineOneSubtitle(), 0, 0, 0xB2FFFFFF);
+                stack.pushPose();
+                stack.translate(x + 35, y + 14, 0);
+                stack.scale(0.75f, 0.75f, 0.75f);
+                GuiComponent.drawString(stack, Minecraft.getInstance().font, data.lineOneSubtitle(), 0, 0, 0xB2FFFFFF);
                 if (data.lineTwoSubtitle() != null && !data.lineTwoSubtitle().isEmpty()) {
-                    pose.translate(0, 12, 0);
-                    graphics.drawString(Minecraft.getInstance().font, data.lineTwoSubtitle(), 0, 0, 0xB2FFFFFF);
+                    stack.translate(0, 12, 0);
+                    GuiComponent.drawString(stack, Minecraft.getInstance().font, data.lineTwoSubtitle(), 0, 0, 0xB2FFFFFF);
                 }
-                pose.popPose();
+                stack.popPose();
             }
 
-            graphics.blit(texture.getTextureLocation(), x, y + 1, 0, 0, 30, 30, 30, 30);
+            RenderSystem.setShaderTexture(0, texture.getTextureLocation());
+            GuiComponent.blit(stack, x, y + 1, 0, 0, 30, 30, 30, 30);
 
-            boolean overAnnouncement = false;
             if (data.announcement() != null && !data.announcement().isEmpty()) {
-                overAnnouncement = renderAnnouncement(graphics, x, y, width, data.announcement(), this.announcementTooltipLines, mouseX, mouseY);
+                isOverAnnouncement = renderAnnouncement(stack, x, y, width, data.announcement(), this.announcementTooltipLines, mouseX, mouseY);
+            }
+        }
+
+        public void renderToolTips(PoseStack stack, int x, int y, int mouseX, int mouseY, int width, int height) {
+            if (!this.entryTooltipLines.isEmpty() && !isOverAnnouncement) {
+                if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
+                    this.parent.parent.renderTooltip(stack, this.entryTooltipLines, Optional.empty(), mouseX, mouseY + 10);
+                }
             }
 
-            if (!this.entryTooltipLines.isEmpty() && !overAnnouncement) {
-                if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
-                    graphics.renderTooltip(Minecraft.getInstance().font, this.entryTooltipLines, Optional.empty(), mouseX, mouseY + 10);
-                }
+            if (isOverAnnouncement) {
+                this.parent.parent.renderTooltip(stack, this.announcementTooltipLines, Optional.empty(), mouseX, mouseY + 10);
             }
         }
     }
 
-    public static boolean renderAnnouncement(GuiGraphics graphics, int x, int y, int width, String announcement, @Nullable List<Component> tooltipLines, int mouseX, int mouseY) {
+    public static boolean renderAnnouncement(PoseStack stack, int x, int y, int width, String announcement, @Nullable List<Component> tooltipLines, int mouseX, int mouseY) {
         announcement = announcement.toUpperCase();
         Font font = Minecraft.getInstance().font;
         var textWidth = font.width(announcement);
@@ -167,22 +181,20 @@ public class ScreenInitEvent {
         var paddingY = 2;
         var textHeight = 8;
 
-        PoseStack pose = graphics.pose();
         // Put the text on top of everything
-        pose.pushPose();
-        pose.translate(textX, textY, 100);
-        pose.scale(0.6f, 0.6f, 0.6f);
-        graphics.fill(-paddingX - borderSize, -paddingY - borderSize, textWidth + paddingX + borderSize, textHeight + paddingY + borderSize, 0x80965222);
-        graphics.fill(-paddingX, -paddingY, textWidth + paddingX, textHeight + paddingY, 0xFFEE883F);
+        stack.pushPose();
+        stack.translate(textX, textY, 100);
+        stack.scale(0.6f, 0.6f, 0.6f);
+        GuiComponent.fill(stack, -paddingX - borderSize, -paddingY - borderSize, textWidth + paddingX + borderSize, textHeight + paddingY + borderSize, 0x80965222);
+        GuiComponent.fill(stack, -paddingX, -paddingY, textWidth + paddingX, textHeight + paddingY, 0xFFEE883F);
 
-        graphics.drawString(font, announcement, 0, 0, 0xFFFFFF);
-        pose.popPose();
+        GuiComponent.drawString(stack, font, announcement, 0, 0, 0xFFFFFF);
+        stack.popPose();
 
         boolean overAnnouncement = false;
         if (tooltipLines != null && !tooltipLines.isEmpty()) {
             if (mouseX >= (textX - paddingX) && mouseX <= textX + ((textWidth + (paddingX * 2)) * 0.6F) && mouseY >= textY && mouseY <= textY + textHeight) {
                 overAnnouncement = true;
-                graphics.renderTooltip(font, tooltipLines, Optional.empty(), mouseX, mouseY + 10);
             }
         }
 
