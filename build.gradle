@@ -74,6 +74,7 @@ repositories {
         url = "https://maven.ftb.dev/releases"
         content {
             includeGroup("dev.ftb.mods")
+            includeGroup("net.rocketplatform.game.client.mod")
         }
     }
     maven {
@@ -82,24 +83,20 @@ repositories {
             includeGroup("dev.architectury")
         }
     }
-    // flatfile libs
-    flatDir(dir: 'libs')
 }
 
 dependencies {
-    implementation "curse.maven:bisecthosting-server-integration-menu-neoforge-1084468:5762091"
+    implementation "curse.maven:bisecthosting-server-integration-menu-neoforge-1084468:${bisecthosting_version}"
 
     // Needs to be pulled into the dev env
-    if (project.file("libs/").exists()) {
-        implementation "libs:rgp_client:1.0.6"
-        runtimeOnly "dev.ftb.mods:ftb-library-neoforge:2101.1.8"
-    }
+    implementation "net.rocketplatform.game.client.mod:rgp-client:${ftb_worlds_version}+mc${minecraft_version}"
+    runtimeOnly "dev.ftb.mods:ftb-library-neoforge:${ftb_library_version}"
 
-    implementation "curse.maven:fancymenu-367706:5823966"
+    implementation "curse.maven:fancymenu-367706:${fancy_menu_version}"
 
     // Deps
-    runtimeOnly "curse.maven:konkrete-410295:5453385"
-    runtimeOnly "curse.maven:melody-938643:5453382"
+    runtimeOnly "curse.maven:konkrete-410295:${fancy_menu_konkrete_version}"
+    runtimeOnly "curse.maven:melody-938643:${fancy_menu_melody_version}"
 }
 
 processResources {
@@ -114,7 +111,7 @@ processResources {
 
     inputs.properties replaceProperties
 
-    filesMatching('META-INF/neoforge.mods.toml') {
+    filesMatching('META-INF/mods.toml') {
         expand replaceProperties
     }
 }

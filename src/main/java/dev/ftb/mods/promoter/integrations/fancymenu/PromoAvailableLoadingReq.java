@@ -16,7 +16,7 @@ public class PromoAvailableLoadingReq extends LoadingRequirement {
 
     public PromoAvailableLoadingReq() {
         // Not a fan that this doesn't just use a resource location, but it's fine...
-        super(ResourceLocation.fromNamespaceAndPath(FTBPromoter.MOD_ID, "promo_available").toString().replace(":", "_"));
+        super(new ResourceLocation(FTBPromoter.MOD_ID, "promo_available").toString().replace(":", "_"));
     }
 
     @Override

@@ -16,7 +16,7 @@ public class RemoteTexture {
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteTexture.class);
     public static final Set<ResourceLocation> LOADED_TEXTURES = new HashSet<>();
 
-    private static final ResourceLocation MISSING_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/unknown_server.png");
+    private static final ResourceLocation MISSING_LOCATION = new ResourceLocation("textures/misc/unknown_server.png");
 
     private final TextureManager textureManager;
     private final ResourceLocation textureLocation;
@@ -31,7 +31,7 @@ public class RemoteTexture {
         this.textureLocalName = textureLocalName;
 
         this.textureManager = textureManager;
-        this.textureLocation = ResourceLocation.fromNamespaceAndPath("ftbpromoter", "promos/" + textureLocalName);
+        this.textureLocation = new ResourceLocation("ftbpromoter", "promos/" + textureLocalName);
 
         this.uploadTexture();
     }

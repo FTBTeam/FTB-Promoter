@@ -160,7 +160,7 @@ public class ScreenInitEvent {
         var textWidth = font.width(announcement);
 
         var textX = x + width - (textWidth * 0.6F) - 12;
-        var textY = y - 2;
+        var textY = y - 1;
         var borderSize = 1;
         var paddingX = 3;
         var paddingY = 2;

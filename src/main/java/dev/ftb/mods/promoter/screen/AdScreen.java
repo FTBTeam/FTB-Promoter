@@ -51,7 +51,7 @@ public class AdScreen extends Screen {
                         String url = promotion.getData().url();
                         if (!result && url != null && !url.isEmpty()) {
                             // Open the URL
-                            var press = ConfirmLinkScreen.confirmLink(this, URI.create(url));
+                            var press = ConfirmLinkScreen.confirmLink(this, url);
                             press.onPress(b);
                         }
                     })
