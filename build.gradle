@@ -90,6 +90,12 @@ mixin {
     config 'ftbpromoter.mixins.json'
 }
 
+jar {
+    manifest.attributes([
+            "MixinConfigs": "ftbpromoter.mixins.json"
+    ])
+}
+
 dependencies {
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     modImplementation "curse.maven:bisecthosting-server-integration-menu-forge-585546:${bisecthosting_version}"
