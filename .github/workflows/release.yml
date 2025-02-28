@@ -44,10 +44,6 @@ jobs:
           fi
           echo "Last hash is $LAST_HASH"
           git log --format=full $LAST_HASH..HEAD > COMMIT_HISTORY
-      - name: Download FTB Worlds
-        run: |
-          mkdir -p libs
-          curl -o libs/rgp_client-1.0.6.jar https://cdn.feed-the-beast.com/ephemeral/rgp_client-1.0.6.jar
       - name: Setup Gradle and Validate Wrapper
         uses: gradle/actions/setup-gradle@v4
         with:
