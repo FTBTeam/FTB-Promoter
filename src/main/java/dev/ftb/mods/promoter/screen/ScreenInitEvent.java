@@ -11,10 +11,10 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.multiplayer.ServerSelectionList;
 import net.minecraft.network.chat.Component;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.event.ScreenEvent;
-import org.jetbrains.annotations.Nullable;
+import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+import javax.annotation.Nullable;
 import java.net.URI;
 import java.util.*;
 
@@ -38,7 +38,8 @@ public class ScreenInitEvent {
                     return;
                 }
 
-                selectionList.children().addFirst(new ServerPromotionEntry(event.getScreen()));
+                // addFirst is not supported in java 17, we'll need to do it ourselves
+                selectionList.children().add(0, new ServerPromotionEntry(event.getScreen()));
             }
         }
     }

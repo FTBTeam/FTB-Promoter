@@ -5,9 +5,9 @@ import de.keksuccino.fancymenu.util.rendering.ui.screen.texteditor.TextEditorFor
 import dev.ftb.mods.promoter.FTBPromoter;
 import dev.ftb.mods.promoter.api.InfoFetcher;
 import net.minecraft.resources.ResourceLocation;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.antlr.v4.runtime.misc.NotNull;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 

@@ -51,7 +51,7 @@ public class AdScreen extends Screen {
                         String url = promotion.getData().url();
                         if (!result && url != null && !url.isEmpty()) {
                             // Open the URL
-                            var press = ConfirmLinkScreen.confirmLink(this, url);
+                            var press = ConfirmLinkScreen.confirmLink(url, this, false);
                             press.onPress(b);
                         }
                     })
@@ -80,8 +80,8 @@ public class AdScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+    public void renderBackground(GuiGraphics guiGraphics) {
+        super.renderBackground(guiGraphics);
         // TOD Render backgrounds
         var availableWidth = getAvailableWidth(promos);
         var middle = this.width / 2;
@@ -95,6 +95,7 @@ public class AdScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        this.renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
         var availableWidth = getAvailableWidth(promos);

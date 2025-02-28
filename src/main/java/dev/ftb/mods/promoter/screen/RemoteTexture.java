@@ -3,7 +3,8 @@ package dev.ftb.mods.promoter.screen;
 import net.minecraft.client.renderer.texture.HttpTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.fml.loading.FMLPaths;
+
+import net.minecraftforge.fml.loading.FMLPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

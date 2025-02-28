@@ -4,12 +4,12 @@ plugins {
     id 'maven-publish'
     id 'idea'
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.8"
-    id 'net.neoforged.moddev' version '2.0.76'
+    id 'net.neoforged.moddev.legacyforge' version '2.0.76'
     id "me.modmuss50.mod-publish-plugin" version "0.8.3"
 }
 
 group = 'dev.ftb.mods'
-version = '21.1'
+version = '20.1'
 
 def buildNumber = project.providers.environmentVariable("BUILD_NUMBER").getOrElse("0-dev.1")
 version = version + "." + buildNumber
@@ -20,14 +20,14 @@ base {
 
 apply from: "https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/publishing.gradle"
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
 
-neoForge {
-    version = project.mod_loader_version
+legacyForge {
+    version = project.minecraft_version + "-" + project.mod_loader_version
 
     parchment {
         mappingsVersion = project.parchment_mappings_version
@@ -85,18 +85,25 @@ repositories {
     }
 }
 
+mixin {
+    add sourceSets.main, 'ftbpromoter.mixins.refmap.json'
+    config 'ftbpromoter.mixins.json'
+}
+
 dependencies {
-    implementation "curse.maven:bisecthosting-server-integration-menu-neoforge-1084468:${bisecthosting_version}"
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    modImplementation "curse.maven:bisecthosting-server-integration-menu-forge-585546:${bisecthosting_version}"
 
     // Needs to be pulled into the dev env
-    implementation "net.rocketplatform.game.client.mod:rgp-client:${ftb_worlds_version}+mc${minecraft_version}"
-    runtimeOnly "dev.ftb.mods:ftb-library-neoforge:${ftb_library_version}"
+    compileOnly "net.rocketplatform.game.client.mod:rgp-client:${ftb_worlds_version}+mc${minecraft_version}"
+    modRuntimeOnly "dev.ftb.mods:ftb-library-forge:${ftb_library_version}"
+    modRuntimeOnly "dev.architectury:architectury-forge:${ftb_library_architectury_version}"
 
-    implementation "curse.maven:fancymenu-367706:${fancy_menu_version}"
+    modImplementation "curse.maven:fancymenu-367706:${fancy_menu_version}"
 
     // Deps
-    runtimeOnly "curse.maven:konkrete-410295:${fancy_menu_konkrete_version}"
-    runtimeOnly "curse.maven:melody-938643:${fancy_menu_melody_version}"
+    modRuntimeOnly "curse.maven:konkrete-410295:${fancy_menu_konkrete_version}"
+    modRuntimeOnly "curse.maven:melody-938643:${fancy_menu_melody_version}"
 }
 
 processResources {
@@ -222,6 +229,7 @@ publishMods {
     file = jar.archiveFile
     displayName = "[NEOFORGE] FTB Promoter ${project.version}"
     modLoaders.add("neoforge")
+    modLoaders.add("forge")
 
     type = stability == "alpha" ? ALPHA : (stability == "beta" ? BETA : STABLE)
 

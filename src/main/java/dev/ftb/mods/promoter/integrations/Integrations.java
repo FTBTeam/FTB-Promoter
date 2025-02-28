@@ -4,7 +4,7 @@ import dev.ftb.mods.promoter.api.PromoData;
 import dev.ftb.mods.promoter.integrations.fancymenu.FancyMenuIntegration;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.screens.Screen;
-import net.neoforged.fml.ModList;
+import net.minecraftforge.fml.ModList;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -18,15 +18,15 @@ side="CLIENT"
 config="ftbpromoter.mixins.json"
 
 [[dependencies.ftbpromoter]]
-    modId="neoforge"
-    required=true
+    modId="forge"
+    mandatory=true
     versionRange="${neo_version_range}"
     ordering="NONE"
     side="CLIENT"
 
 [[dependencies.ftbpromoter]]
     modId="minecraft"
-    required=true
+    mandatory=true
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="CLIENT"

@@ -26,31 +26,30 @@ public class InfoFetcher {
     }
 
     public void load() {
-        try (var client = HttpClient.newHttpClient()) {
-            var request = HttpRequest.newBuilder()
-                    .uri(URI.create(API_URL))
-                    .GET()
-                    .build();
+        var client = HttpClient.newHttpClient();
+        var request = HttpRequest.newBuilder()
+                .uri(URI.create(API_URL))
+                .GET()
+                .build();
 
-            // Send of the request asynchronously (don't block the main thread)
-            client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                    .thenApply(HttpResponse::body)
-                    .thenAccept(data -> {
-                        // Do something with our data
-                        try {
-                            var gson = new Gson();
-                            var response = gson.fromJson(data, PromoResponse.class);
+        // Send of the request asynchronously (don't block the main thread)
+        client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(HttpResponse::body)
+                .thenAccept(data -> {
+                    // Do something with our data
+                    try {
+                        var gson = new Gson();
+                        var response = gson.fromJson(data, PromoResponse.class);
 
-                            promotions.addAll(response.promotions());
-                        } catch (Exception e) {
-                            LOGGER.error("Failed to parse response", e);
-                        }
-                    })
-                    .exceptionally(e -> {
-                        LOGGER.error("Failed to fetch promotions", e);
-                        return null;
-                    });
-        }
+                        promotions.addAll(response.promotions());
+                    } catch (Exception e) {
+                        LOGGER.error("Failed to parse response", e);
+                    }
+                })
+                .exceptionally(e -> {
+                    LOGGER.error("Failed to fetch promotions", e);
+                    return null;
+                });
     }
 
     public List<PromoData> getPromotions() {
