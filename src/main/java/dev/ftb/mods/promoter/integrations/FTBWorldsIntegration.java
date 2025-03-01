@@ -7,8 +7,6 @@ import net.rocketplatform.game.client.mod.ui.FTBWorldsButton;
 import net.rocketplatform.game.client.mod.ui.PromoServerEntry;
 
 public class FTBWorldsIntegration implements Integration {
-    private final FTBWorldsButton fakeButtonHolder = FTBWorldsButton.createVanilla(0, 0, 0, 0);
-
     @Override
     public <E extends AbstractSelectionList.Entry<E>> boolean filterServerListEntry(E entry) {
         return entry instanceof PromoServerEntry;
@@ -20,6 +18,7 @@ public class FTBWorldsIntegration implements Integration {
             return false;
         }
 
+        var fakeButtonHolder = FTBWorldsButton.createVanilla(0, 0, 0, 0);
         if (fakeButtonHolder == null) {
             return false;
         }
