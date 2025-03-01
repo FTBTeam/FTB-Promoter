@@ -38,6 +38,7 @@ public class Integrations {
     public static <E extends AbstractSelectionList.Entry<E>> boolean denyEntry(E entry) {
         for (Integration integration : INTEGRATIONS) {
             if (integration.filterServerListEntry(entry)) {
+                System.out.printf("Integration %s denied entry %s", integration.getClass().getSimpleName(), entry.getClass().getSimpleName());
                 return true;
             }
         }

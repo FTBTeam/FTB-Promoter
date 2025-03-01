@@ -12,6 +12,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.multiplayer.ServerSelectionList;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -21,7 +22,7 @@ import java.util.*;
 
 public class ScreenInitEvent {
     @SubscribeEvent
-    public static void onScreenInit(ScreenEvent.Init.Post event) {
+    public static void onScreenInit(ScreenEvent.InitScreenEvent event) {
         if (!(event.getScreen() instanceof JoinMultiplayerScreen)) {
             return;
         }
@@ -65,7 +66,7 @@ public class ScreenInitEvent {
 
         @Override
         public Component getNarration() {
-            return Component.empty();
+            return TextComponent.EMPTY;
         }
 
         @Override
@@ -127,7 +128,7 @@ public class ScreenInitEvent {
             var lines = tooltip.split("\n");
             List<Component> components = new ArrayList<>();
             for (var line : lines) {
-                components.add(Component.literal(line));
+                components.add(new TextComponent(line));
             }
 
             return components;

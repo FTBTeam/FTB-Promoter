@@ -12,6 +12,7 @@ import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class AdScreen extends Screen {
     private Button buttonRight = null;
 
     public AdScreen(Screen parent) {
-        super(Component.empty());
+        super(TextComponent.EMPTY);
         this.parent = parent;
 
         for (PromoData promo : InfoFetcher.get().getPromotions()) {
@@ -41,7 +42,7 @@ public class AdScreen extends Screen {
         var middle = this.width / 2;
         var sectionOneLeft = middle - 154 - 2;
 
-        addRenderableWidget(new ButtonBuilder(Component.literal("X"), (b) -> onClose())
+        addRenderableWidget(new ButtonBuilder(new TextComponent("X"), (b) -> onClose())
                 .pos(sectionOneLeft + 308 - 18, 3)
                 .size(14, 14)
                 .build()
@@ -51,7 +52,7 @@ public class AdScreen extends Screen {
 
         var horizontalShift = promos.size() == 1 ? middle - (154/2) : sectionOneLeft;
         for (PromoDataHolder promotion : promos) {
-            ButtonBuilder button = new ButtonBuilder(Component.literal(promotion.getData().buttonText()), (b) -> {
+            ButtonBuilder button = new ButtonBuilder(new TextComponent(promotion.getData().buttonText()), (b) -> {
                         var result = Integrations.clickAction(promotion.getData(), this);
                         String url = promotion.getData().url();
                         if (!result && url != null && !url.isEmpty()) {
@@ -61,7 +62,7 @@ public class AdScreen extends Screen {
                                 }
 
                                 Minecraft.getInstance().setScreen(this);
-                            }, Component.literal(promotion.getData().name()), url, true));
+                            }, url, true));
                         }
                     })
                     .pos(horizontalShift + 3, this.height - 30)
@@ -69,7 +70,7 @@ public class AdScreen extends Screen {
 
             var buttonTooltip = promotion.data.buttonTooltip();
             if (buttonTooltip != null && !buttonTooltip.isEmpty()) {
-                button.tooltip(this, Collections.singletonList(Component.literal(buttonTooltip)));
+                button.tooltip(this, Collections.singletonList(new TextComponent(buttonTooltip)));
             }
 
             Button btn = button.build();
@@ -159,7 +160,7 @@ public class AdScreen extends Screen {
         public PromoDataHolder(PromoData data) {
             this.data = data;
             this.logo = new RemoteTexture(URI.create(data.logo()), data.uuid().toString() + data.logoVersion(), Minecraft.getInstance().getTextureManager());
-            this.description = MultiLineLabel.create(Minecraft.getInstance().font, Component.literal(data.description()), 140);
+            this.description = MultiLineLabel.create(Minecraft.getInstance().font, new TextComponent(data.description()), 140);
         }
 
         public PromoData getData() {
@@ -178,8 +179,8 @@ public class AdScreen extends Screen {
     private static class ButtonBuilder {
         private int x = 0;
         private int y = 0;
-        private int width = Button.DEFAULT_WIDTH;
-        private int height = Button.DEFAULT_HEIGHT;
+        private int width = 120;
+        private int height = 20;
         private Component text;
         private Button.OnPress onPress;
         private Button.OnTooltip onTooltip = Button.NO_TOOLTIP;

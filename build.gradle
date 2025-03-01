@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'dev.ftb.mods'
-version = '19.2'
+version = mod_version_base
 
 def buildNumber = project.providers.environmentVariable("BUILD_NUMBER").getOrElse("0-dev.1")
 version = version + "." + buildNumber
@@ -88,6 +88,12 @@ repositories {
 mixin {
     add sourceSets.main, 'ftbpromoter.mixins.refmap.json'
     config 'ftbpromoter.mixins.json'
+}
+
+jar {
+    manifest.attributes([
+            "MixinConfigs": "ftbpromoter.mixins.json"
+    ])
 }
 
 dependencies {
