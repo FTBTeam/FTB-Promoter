@@ -26,7 +26,8 @@ public class InfoFetcher {
     }
 
     public void load() {
-        try (var client = HttpClient.newHttpClient()) {
+        try {
+            var client = HttpClient.newHttpClient();
             var request = HttpRequest.newBuilder()
                     .uri(URI.create(API_URL))
                     .GET()
@@ -50,6 +51,8 @@ public class InfoFetcher {
                         LOGGER.error("Failed to fetch promotions", e);
                         return null;
                     });
+        } catch (Exception e) {
+            LOGGER.error("Failed to fetch promotions", e);
         }
     }
 
