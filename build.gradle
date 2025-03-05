@@ -232,7 +232,7 @@ publishMods {
 
     dryRun = !cfToken.isPresent()
     changelog = createChangelog()
-    file = jar.archiveFile
+    file = reobfJar.archiveFile
     displayName = "[NEOFORGE] FTB Promoter ${project.version}"
     modLoaders.add("neoforge")
     modLoaders.add("forge")
