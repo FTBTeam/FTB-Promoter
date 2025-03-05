@@ -38,7 +38,7 @@ public class ScreenInitEvent {
                     return;
                 }
 
-                selectionList.children().addFirst(new ServerPromotionEntry(event.getScreen()));
+                selectionList.children().add(0, new ServerPromotionEntry(event.getScreen()));
             }
         }
     }
