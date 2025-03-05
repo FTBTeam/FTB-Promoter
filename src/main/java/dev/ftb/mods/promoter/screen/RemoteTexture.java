@@ -1,15 +1,16 @@
 package dev.ftb.mods.promoter.screen;
 
-import net.minecraft.client.renderer.texture.HttpTexture;
+import net.minecraft.client.renderer.texture.DownloadingTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.resources.ResourceLocation;
 
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -53,10 +54,10 @@ public class RemoteTexture {
         }
 
         // Download the image
-        var root = FMLPaths.GAMEDIR.get().resolve("downloads/promos");
-        var file = new File(root.toFile(), this.textureLocalName);
+        Path root = FMLPaths.GAMEDIR.get().resolve("downloads/promos");
+        File file = new File(root.toFile(), this.textureLocalName);
 
-        this.textureManager.register(this.textureLocation, new HttpTexture(file, this.url.toString(), MISSING_LOCATION, false, () -> {
+        this.textureManager.register(this.textureLocation, new DownloadingTexture(file, this.url.toString(), MISSING_LOCATION, false, () -> {
             this.ready = true;
             LOADED_TEXTURES.add(this.textureLocation);
         }));

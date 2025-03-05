@@ -20,7 +20,7 @@ public final class PromoResponse {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (PromoResponse) obj;
+        PromoResponse that = (PromoResponse) obj;
         return Objects.equals(this.promotions, that.promotions);
     }
 

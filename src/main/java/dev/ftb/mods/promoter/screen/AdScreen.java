@@ -1,23 +1,26 @@
 package dev.ftb.mods.promoter.screen;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import dev.ftb.mods.promoter.api.InfoFetcher;
 import dev.ftb.mods.promoter.api.PromoData;
 import dev.ftb.mods.promoter.integrations.Integrations;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.MultiLineLabel;
-import net.minecraft.client.gui.screens.ConfirmLinkScreen;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.client.gui.screen.ConfirmOpenLinkScreen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.ServerSelectionList;
+import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.util.IReorderingProcessor;
+import net.minecraft.util.Util;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class AdScreen extends Screen {
     private final List<PromoDataHolder> promos = new ArrayList<>();
@@ -27,7 +30,7 @@ public class AdScreen extends Screen {
     private Button buttonRight = null;
 
     public AdScreen(Screen parent) {
-        super(TextComponent.EMPTY);
+        super(StringTextComponent.EMPTY);
         this.parent = parent;
 
         for (PromoData promo : InfoFetcher.get().getPromotions()) {
@@ -39,24 +42,24 @@ public class AdScreen extends Screen {
     protected void init() {
         super.init();
 
-        var middle = this.width / 2;
-        var sectionOneLeft = middle - 154 - 2;
+        int middle = this.width / 2;
+        int sectionOneLeft = middle - 154 - 2;
 
-        addRenderableWidget(new ButtonBuilder(new TextComponent("X"), (b) -> onClose())
+        this.addButton(new ButtonBuilder(new StringTextComponent("X"), (b) -> onClose())
                 .pos(sectionOneLeft + 308 - 18, 3)
                 .size(14, 14)
                 .build()
         );
 
-        var buttonWidth = 148;
+        int buttonWidth = 148;
 
-        var horizontalShift = promos.size() == 1 ? middle - (154/2) : sectionOneLeft;
+        int horizontalShift = promos.size() == 1 ? middle - (154/2) : sectionOneLeft;
         for (PromoDataHolder promotion : promos) {
-            ButtonBuilder button = new ButtonBuilder(new TextComponent(promotion.getData().buttonText()), (b) -> {
-                        var result = Integrations.clickAction(promotion.getData(), this);
+            ButtonBuilder button = new ButtonBuilder(new StringTextComponent(promotion.getData().buttonText()), (b) -> {
+                        boolean result = Integrations.clickAction(promotion.getData(), this);
                         String url = promotion.getData().url();
                         if (!result && url != null && !url.isEmpty()) {
-                            Minecraft.getInstance().setScreen(new ConfirmLinkScreen((success) -> {
+                            Minecraft.getInstance().setScreen(new ConfirmOpenLinkScreen((success) -> {
                                 if (success) {
                                     Util.getPlatform().openUri("https://aka.ms/JavaAccountSettings");
                                 }
@@ -68,9 +71,9 @@ public class AdScreen extends Screen {
                     .pos(horizontalShift + 3, this.height - 30)
                     .width(buttonWidth);
 
-            var buttonTooltip = promotion.data.buttonTooltip();
+            String buttonTooltip = promotion.data.buttonTooltip();
             if (buttonTooltip != null && !buttonTooltip.isEmpty()) {
-                button.tooltip(this, Collections.singletonList(new TextComponent(buttonTooltip)));
+                button.tooltip(this, Collections.singletonList(new StringTextComponent(buttonTooltip)));
             }
 
             Button btn = button.build();
@@ -80,7 +83,7 @@ public class AdScreen extends Screen {
                 buttonRight = btn;
             }
 
-            addRenderableWidget(btn);
+            addButton(btn);
 
             horizontalShift += 154 + 2;
         }
@@ -97,13 +100,13 @@ public class AdScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(PoseStack guiGraphics) {
+    public void renderBackground(MatrixStack guiGraphics) {
         super.renderBackground(guiGraphics);
 
-        var availableWidth = getAvailableWidth(promos);
-        var middle = this.width / 2;
+        int availableWidth = getAvailableWidth(promos);
+        int middle = this.width / 2;
 
-        var horizontalShift = (middle - 2) - (availableWidth * promos.size()) / 2;
+        int horizontalShift = (middle - 2) - (availableWidth * promos.size()) / 2;
         for (PromoDataHolder promotion : promos) {
             renderSectionBackground(promotion, guiGraphics, horizontalShift, availableWidth);
             horizontalShift += availableWidth + 2;
@@ -111,16 +114,16 @@ public class AdScreen extends Screen {
     }
 
     @Override
-    public void render(PoseStack guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void render(MatrixStack guiGraphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
-        var availableWidth = getAvailableWidth(promos);
-        var middle = this.width / 2 - 2;
+        int availableWidth = getAvailableWidth(promos);
+        int middle = this.width / 2 - 2;
 
-        var horizontalShift = middle - (availableWidth * promos.size()) / 2;
+        int horizontalShift = middle - (availableWidth * promos.size()) / 2;
         for (PromoDataHolder promotion : promos) {
-            var isLeft = promotion == promos.get(0);
+            boolean isLeft = promotion == promos.get(0);
             renderSection(promotion, guiGraphics, horizontalShift, availableWidth, mouseX, mouseY, isLeft ? buttonLeft : buttonRight);
             horizontalShift += availableWidth + 2;
         }
@@ -130,24 +133,28 @@ public class AdScreen extends Screen {
         return promos.size() > 1 ? 154 : 308;
     }
 
-    private void renderSection(PromoDataHolder holder, PoseStack poseStack, int x, int width, int mouseX, int mouseY, Button btn) {
-        var data = holder.getData();
+    private void renderSection(PromoDataHolder holder, MatrixStack poseStack, int x, int width, int mouseX, int mouseY, Button btn) {
+        PromoData data = holder.getData();
 
-        RenderSystem.setShaderTexture(0, holder.getLogo().getTextureLocation());
+        Minecraft.getInstance().getTextureManager().bind(holder.getLogo().getTextureLocation());
         blit(poseStack, x + width / 2 - 15, 10, 0, 0, 30, 30, 30, 30);
 
         drawCenteredString(poseStack, Minecraft.getInstance().font, data.name(), x + width / 2, 50, 0xFFFFFF);
 
-        var description = holder.getDescription();
-        description.renderLeftAligned(poseStack, x + 8, 70, 10, 0xFFFFFF);
+        List<IReorderingProcessor> description = holder.getDescription().get(width - 4);
+        int lineOffset = 0;
+        for (IReorderingProcessor processor : description) {
+            Minecraft.getInstance().font.draw(poseStack, processor, x + 8f, 70f + lineOffset, 0xFFFFFF);
+            lineOffset += Minecraft.getInstance().font.lineHeight;
+        }
 
         String announcement = data.announcement();
-        if (announcement != null && !announcement.isEmpty() && !btn.isHoveredOrFocused()) {
-            ScreenInitEvent.renderAnnouncement(poseStack, x, this.height - 30, width, announcement, null, mouseX, mouseY);
+        if (announcement != null && !announcement.isEmpty() && !btn.isHovered()) {
+            ScreenInitEvent.renderAnnouncement(poseStack, x, this.height - 30, width, announcement, null, mouseX, mouseY, true);
         }
     }
 
-    private void renderSectionBackground(PromoDataHolder holder, PoseStack stack, int x, int width) {
+    private void renderSectionBackground(PromoDataHolder holder, MatrixStack stack, int x, int width) {
         fill(stack, x, 0, x + width, this.height, 0x09FFFFFF);
         fill(stack, x + 2, 0, x + width - 2, this.height, 0x80000000);
     }
@@ -155,12 +162,12 @@ public class AdScreen extends Screen {
     private static class PromoDataHolder {
         private final PromoData data;
         private final RemoteTexture logo;
-        private final MultiLineLabel description;
+        private final KeyBasedValueCache<Integer, List<IReorderingProcessor>> description;
 
         public PromoDataHolder(PromoData data) {
             this.data = data;
             this.logo = new RemoteTexture(URI.create(data.logo()), data.uuid().toString() + data.logoVersion(), Minecraft.getInstance().getTextureManager());
-            this.description = MultiLineLabel.create(Minecraft.getInstance().font, new TextComponent(data.description()), 140);
+            this.description = new KeyBasedValueCache<>((key) -> Minecraft.getInstance().font.split(new StringTextComponent(data.description()), key));
         }
 
         public PromoData getData() {
@@ -171,8 +178,28 @@ public class AdScreen extends Screen {
             return logo;
         }
 
-        public MultiLineLabel getDescription() {
+        public KeyBasedValueCache<Integer, List<IReorderingProcessor>> getDescription() {
             return description;
+        }
+    }
+
+    private static class KeyBasedValueCache<K, T> {
+        private K key;
+
+        private T value;
+        private final Function<K, T> creator;
+
+        public KeyBasedValueCache(Function<K, T> creator) {
+            this.creator = creator;
+        }
+
+        public T get(K key) {
+            if (this.key == null || !this.key.equals(key)) {
+                this.key = key;
+                this.value = creator.apply(key);
+            }
+
+            return value;
         }
     }
 
@@ -181,11 +208,11 @@ public class AdScreen extends Screen {
         private int y = 0;
         private int width = 120;
         private int height = 20;
-        private Component text;
-        private Button.OnPress onPress;
-        private Button.OnTooltip onTooltip = Button.NO_TOOLTIP;
+        private ITextComponent text;
+        private Button.IPressable onPress;
+        private Button.ITooltip onTooltip = Button.NO_TOOLTIP;
 
-        public ButtonBuilder(Component text, Button.OnPress onPress) {
+        public ButtonBuilder(ITextComponent text, Button.IPressable onPress) {
             this.text = text;
             this.onPress = onPress;
         }
@@ -230,7 +257,7 @@ public class AdScreen extends Screen {
             return this;
         }
 
-        public ButtonBuilder tooltip(Screen screen, List<Component> text) {
+        public ButtonBuilder tooltip(Screen screen, List<ITextComponent> text) {
             this.onTooltip = (button, stack, x, y) -> screen.renderComponentTooltip(stack, text, x, y);
             return this;
         }

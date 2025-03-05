@@ -1,9 +1,8 @@
 package dev.ftb.mods.promoter.integrations;
 
 import dev.ftb.mods.promoter.api.PromoData;
-import dev.ftb.mods.promoter.integrations.fancymenu.FancyMenuIntegration;
-import net.minecraft.client.gui.components.AbstractSelectionList;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.list.AbstractList;
 import net.minecraftforge.fml.ModList;
 
 import java.util.ArrayList;
@@ -26,16 +25,16 @@ public class Integrations {
             INTEGRATIONS.add(new BisectHostingIntegration());
         }
 
-        if (ModList.get().isLoaded(FTB_WORLD_MOD_ID)) {
-            INTEGRATIONS.add(new FTBWorldsIntegration());
-        }
-
-        if (ModList.get().isLoaded(FANCY_MENU_MOD_ID)) {
-            FancyMenuIntegration.init();
-        }
+//        if (ModList.get().isLoaded(FTB_WORLD_MOD_ID)) {
+//            INTEGRATIONS.add(new FTBWorldsIntegration());
+//        }
+//
+//        if (ModList.get().isLoaded(FANCY_MENU_MOD_ID)) {
+//            FancyMenuIntegration.init();
+//        }
     }
 
-    public static <E extends AbstractSelectionList.Entry<E>> boolean denyEntry(E entry) {
+    public static <E extends AbstractList.AbstractListEntry<E>> boolean denyEntry(E entry) {
         for (Integration integration : INTEGRATIONS) {
             if (integration.filterServerListEntry(entry)) {
                 System.out.printf("Integration %s denied entry %s", integration.getClass().getSimpleName(), entry.getClass().getSimpleName());

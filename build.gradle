@@ -4,8 +4,9 @@ plugins {
     id 'maven-publish'
     id 'idea'
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.8"
-    id 'net.neoforged.moddev.legacyforge' version '2.0.76'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
     id "me.modmuss50.mod-publish-plugin" version "0.8.3"
+    id 'org.spongepowered.mixin' version '0.7.+'
 }
 
 group = 'dev.ftb.mods'
@@ -20,44 +21,35 @@ base {
 
 apply from: "https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/publishing.gradle"
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
 
-legacyForge {
-    version = project.minecraft_version + "-" + project.mod_loader_version
-
-    parchment {
-        mappingsVersion = project.parchment_mappings_version
-        minecraftVersion = project.parchment_minecraft_version
-    }
+minecraft {
+    mappings channel: "official", version: minecraft_version
+    copyIdeResources = true
 
      accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {
-        client {
-            client()
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
-
         configureEach {
-            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            workingDirectory project.file('run')
 
-            logLevel = org.slf4j.event.Level.DEBUG
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        client {
         }
     }
-
-    mods {
-        "${mod_id}" {
-            sourceSet(sourceSets.main)
-        }
-    }
-}
-
-configurations {
-    runtimeClasspath.extendsFrom localRuntime
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
@@ -83,6 +75,12 @@ repositories {
             includeGroup("dev.architectury")
         }
     }
+    maven {
+        url = 'https://maven.covers1624.net/'
+        content {
+            includeGroup("net.covers1624")
+        }
+    }
 }
 
 mixin {
@@ -90,26 +88,22 @@ mixin {
     config 'ftbpromoter.mixins.json'
 }
 
-jar {
-    manifest.attributes([
-            "MixinConfigs": "ftbpromoter.mixins.json"
-    ])
-}
-
 dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${mod_loader_version}"
+
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    modImplementation "curse.maven:bisecthosting-server-integration-menu-forge-585546:${bisecthosting_version}"
+    compileOnly "curse.maven:bisecthosting-server-integration-menu-forge-585546:${bisecthosting_version}"
 
     // Needs to be pulled into the dev env
-    compileOnly "net.rocketplatform.game.client.mod:rgp-client:${ftb_worlds_version}+mc${minecraft_version}"
-    modRuntimeOnly "dev.ftb.mods:ftb-library-forge:${ftb_library_version}"
-    modRuntimeOnly "dev.architectury:architectury-forge:${ftb_library_architectury_version}"
+//    compileOnly "net.rocketplatform.game.client.mod:rgp-client:${ftb_worlds_version}+mc${minecraft_version}"
+//    runtimeOnly "dev.ftb.mods:ftb-library-forge:${ftb_library_version}"
+//    runtimeOnly "dev.architectury:architectury-forge:${ftb_library_architectury_version}"
 
-    modImplementation "curse.maven:fancymenu-367706:${fancy_menu_version}"
+//    implementation "curse.maven:fancymenu-367706:${fancy_menu_version}"
 
     // Deps
-    modRuntimeOnly "curse.maven:konkrete-410295:${fancy_menu_konkrete_version}"
-    modRuntimeOnly "curse.maven:melody-938643:${fancy_menu_melody_version}"
+//    runtimeOnly "curse.maven:konkrete-410295:${fancy_menu_konkrete_version}"
+//    runtimeOnly "curse.maven:melody-938643:${fancy_menu_melody_version}"
 }
 
 processResources {
@@ -127,6 +121,23 @@ processResources {
     filesMatching('META-INF/mods.toml') {
         expand replaceProperties
     }
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+                "MixinConfigs": "ftbpromoter.mixins.json",
+                'Specification-Title'     : mod_id,
+                'Specification-Vendor'    : "FTB Team",
+                'Specification-Version'   : '1', // We are version 1 of ourselves
+                'Implementation-Title'    : project.name,
+                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Vendor'   : "FTB Team",
+                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+
+    finalizedBy 'reobfJar'
 }
 
 publishing {

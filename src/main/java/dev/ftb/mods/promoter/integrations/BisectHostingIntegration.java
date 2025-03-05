@@ -4,12 +4,12 @@ import com.bisecthosting.mods.bhmenu.modules.servercreatorbanner.screens.BHOrder
 import com.bisecthosting.mods.bhmenu.modules.servercreatorbanner.screens.BannerEntry;
 import dev.ftb.mods.promoter.api.PromoData;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.AbstractSelectionList;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.list.AbstractList;
 
 public class BisectHostingIntegration implements Integration {
     @Override
-    public <E extends AbstractSelectionList.Entry<E>> boolean filterServerListEntry(E entry) {
+    public <E extends AbstractList.AbstractListEntry<E>> boolean filterServerListEntry(E entry) {
         return entry instanceof BannerEntry;
     }
 
