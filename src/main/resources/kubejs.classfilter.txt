@@ -1,2 +1,3 @@
 +dev.ftb.mods.promoter.api.InfoFetcher
 +dev.ftb.mods.promoter.api.PromoData
++com.bisecthosting.mods.bhmenu.modules.servercreatorbanner.screens
