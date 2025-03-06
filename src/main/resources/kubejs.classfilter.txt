@@ -1,0 +1,2 @@
++dev.ftb.mods.promoter.api.InfoFetcher
++dev.ftb.mods.promoter.api.PromoData
