@@ -6,8 +6,11 @@ import dev.ftb.mods.promoter.api.PromoData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.screens.Screen;
+import java.util.function.Consumer;
 
 public class BisectHostingIntegration implements Integration {
+    public static final Consumer<Screen> OPEN_BISECT_HOSTING = screen -> Minecraft.getInstance().setScreen(new BHOrderScreen(screen));
+    
     @Override
     public <E extends AbstractSelectionList.Entry<E>> boolean filterServerListEntry(E entry) {
         return entry instanceof BannerEntry;

@@ -1,0 +1,5 @@
+{
+    "actions": {
+        "bisecthosting": "dev.ftb.mods.promoter.integrations.BisectHostingIntegration.OPEN_BISECT_HOSTING"
+    }
+}
