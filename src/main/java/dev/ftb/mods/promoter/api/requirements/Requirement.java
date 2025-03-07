@@ -2,8 +2,8 @@ package dev.ftb.mods.promoter.api.requirements;
 
 import com.google.gson.*;
 import dev.ftb.mods.promoter.api.PromoData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Type;
 
@@ -13,7 +13,7 @@ public abstract class Requirement {
     public abstract boolean test(PromoData data);
 
     public static class RequirementDeserializer implements JsonDeserializer<Requirement> {
-        private static final Logger LOGGER = LoggerFactory.getLogger(RequirementDeserializer.class);
+        private static final Logger LOGGER = LogManager.getLogger(RequirementDeserializer.class);
 
         @Override
         public Requirement deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {

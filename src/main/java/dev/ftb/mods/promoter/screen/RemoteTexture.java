@@ -1,12 +1,11 @@
 package dev.ftb.mods.promoter.screen;
 
-import net.minecraft.client.renderer.texture.DownloadingTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.loading.FMLPaths;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.net.URI;
@@ -15,7 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class RemoteTexture {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RemoteTexture.class);
+    private static final Logger LOGGER = LogManager.getLogger(RemoteTexture.class);
     public static final Set<ResourceLocation> LOADED_TEXTURES = new HashSet<>();
 
     private static final ResourceLocation MISSING_LOCATION = new ResourceLocation("textures/misc/unknown_server.png");
@@ -57,7 +56,7 @@ public class RemoteTexture {
         Path root = FMLPaths.GAMEDIR.get().resolve("downloads/promos");
         File file = new File(root.toFile(), this.textureLocalName);
 
-        this.textureManager.register(this.textureLocation, new DownloadingTexture(file, this.url.toString(), MISSING_LOCATION, false, () -> {
+        this.textureManager.register(this.textureLocation, new AgentDownloadingTexture(file, this.url.toString(), MISSING_LOCATION, () -> {
             this.ready = true;
             LOADED_TEXTURES.add(this.textureLocation);
         }));

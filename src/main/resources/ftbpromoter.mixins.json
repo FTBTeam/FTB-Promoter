@@ -5,8 +5,7 @@
   "refmap": "ftbpromoter.mixins.refmap.json",
   "compatibilityLevel": "JAVA_8",
   "client": [
-    "AbstractSelectionListMixin",
-    "DownloadingTextureMixins"
+    "AbstractSelectionListMixin"
   ],
   "injectors": {
     "defaultRequire": 1

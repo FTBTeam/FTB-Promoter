@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.ftb.mods.promoter.api.requirements.Requirement;
 import net.minecraft.client.Minecraft;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -14,7 +14,7 @@ import java.net.URL;
 import java.util.*;
 
 public class InfoFetcher {
-    private static final Logger LOGGER = LoggerFactory.getLogger(InfoFetcher.class);
+    private static final Logger LOGGER = LogManager.getLogger(InfoFetcher.class);
 
     private static final InfoFetcher INSTANCE = new InfoFetcher();
     private static final String API_URL = "https://api.feed-the-beast.com/v1/meta/promotions";
