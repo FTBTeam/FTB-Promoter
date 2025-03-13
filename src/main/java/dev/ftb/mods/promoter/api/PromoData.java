@@ -4,7 +4,6 @@ import dev.ftb.mods.promoter.api.requirements.Requirement;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -36,6 +35,7 @@ public record PromoData(
         @Nullable String announcementTooltip,
         String buttonText,
         @Nullable String buttonTooltip,
-        @Nullable String url
+        @Nullable String url,
+        List<Requirement> requirements
 ) {
 }
