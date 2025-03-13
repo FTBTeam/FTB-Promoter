@@ -1,6 +1,9 @@
 package dev.ftb.mods.promoter.api;
 
+import dev.ftb.mods.promoter.api.requirements.Requirement;
+
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -41,6 +44,8 @@ public final class PromoData {
     private String buttonTooltip;
     @Nullable
     private String url;
+    @Nullable
+    private List<Requirement> requirements;
 
     public PromoData(
             UUID uuid,
@@ -131,11 +136,15 @@ public final class PromoData {
         return url;
     }
 
+    public List<Requirement> requirements() {
+        return requirements;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (PromoData) obj;
+        PromoData that = (PromoData) obj;
         return Objects.equals(this.uuid, that.uuid) &&
                 Objects.equals(this.name, that.name) &&
                 Objects.equals(this.logo, that.logo) &&

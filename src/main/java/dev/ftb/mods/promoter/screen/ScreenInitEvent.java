@@ -153,7 +153,7 @@ public class ScreenInitEvent {
             GuiComponent.blit(stack, x, y + 1, 0, 0, 30, 30, 30, 30);
 
             if (data.announcement() != null && !data.announcement().isEmpty()) {
-                isOverAnnouncement = renderAnnouncement(stack, x, y, width, data.announcement(), this.announcementTooltipLines, mouseX, mouseY);
+                isOverAnnouncement = renderAnnouncement(stack, x, y, width, data.announcement(), this.announcementTooltipLines, mouseX, mouseY, false);
             }
         }
 
@@ -170,7 +170,13 @@ public class ScreenInitEvent {
         }
     }
 
-    public static boolean renderAnnouncement(PoseStack stack, int x, int y, int width, String announcement, @Nullable List<Component> tooltipLines, int mouseX, int mouseY) {
+    public static boolean renderAnnouncement(PoseStack stack, int x, int y, int width, String announcement, @Nullable List<Component> tooltipLines, int mouseX, int mouseY, boolean offset) {
+        boolean isOnlyPromo = InfoFetcher.get().getPromotions().size() == 1;
+
+        if (isOnlyPromo && offset) {
+            x -= 74;
+        }
+
         announcement = announcement.toUpperCase();
         Font font = Minecraft.getInstance().font;
         var textWidth = font.width(announcement);

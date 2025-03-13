@@ -18,6 +18,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 public class AdScreen extends Screen {
     private final List<PromoDataHolder> promos = new ArrayList<>();
@@ -139,11 +140,11 @@ public class AdScreen extends Screen {
         drawCenteredString(poseStack, Minecraft.getInstance().font, data.name(), x + width / 2, 50, 0xFFFFFF);
 
         var description = holder.getDescription();
-        description.renderLeftAligned(poseStack, x + 8, 70, 10, 0xFFFFFF);
+        description.get(width - 4).renderLeftAligned(poseStack, x + 8, 70, 10, 0xFFFFFF);
 
         String announcement = data.announcement();
         if (announcement != null && !announcement.isEmpty() && !btn.isHoveredOrFocused()) {
-            ScreenInitEvent.renderAnnouncement(poseStack, x, this.height - 30, width, announcement, null, mouseX, mouseY);
+            ScreenInitEvent.renderAnnouncement(poseStack, x, this.height - 30, width, announcement, null, mouseX, mouseY, true);
         }
     }
 
@@ -155,12 +156,12 @@ public class AdScreen extends Screen {
     private static class PromoDataHolder {
         private final PromoData data;
         private final RemoteTexture logo;
-        private final MultiLineLabel description;
+        private final KeyBasedValueCache<Integer, MultiLineLabel> description;
 
         public PromoDataHolder(PromoData data) {
             this.data = data;
             this.logo = new RemoteTexture(URI.create(data.logo()), data.uuid().toString() + data.logoVersion(), Minecraft.getInstance().getTextureManager());
-            this.description = MultiLineLabel.create(Minecraft.getInstance().font, new TextComponent(data.description()), 140);
+            this.description = new KeyBasedValueCache<>((width) -> MultiLineLabel.create(Minecraft.getInstance().font, new TextComponent(data.description()), width));
         }
 
         public PromoData getData() {
@@ -171,8 +172,28 @@ public class AdScreen extends Screen {
             return logo;
         }
 
-        public MultiLineLabel getDescription() {
+        public KeyBasedValueCache<Integer, MultiLineLabel> getDescription() {
             return description;
+        }
+    }
+
+    private static class KeyBasedValueCache<K, T> {
+        private K key;
+
+        private T value;
+        private final Function<K, T> creator;
+
+        public KeyBasedValueCache(Function<K, T> creator) {
+            this.creator = creator;
+        }
+
+        public T get(K key) {
+            if (this.key == null || !this.key.equals(key)) {
+                this.key = key;
+                this.value = creator.apply(key);
+            }
+
+            return value;
         }
     }
 
