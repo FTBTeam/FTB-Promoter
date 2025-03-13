@@ -6,47 +6,17 @@ import dev.ftb.mods.promoter.api.PromoData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.IGuiEventListener;
-import net.minecraft.client.gui.screen.MultiplayerScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ServerSelectionList;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.util.*;
 
 public class ScreenInitEvent {
-    @SubscribeEvent
-    public static void onScreenInit(GuiScreenEvent.InitGuiEvent.Post event) {
-        if (!(event.getGui() instanceof MultiplayerScreen)) {
-            return;
-        }
-
-        for (IGuiEventListener guiEventListener : event.getGui().children()) {
-            if (guiEventListener instanceof ServerSelectionList) {
-                ServerSelectionList selectionList = (ServerSelectionList) guiEventListener;
-                // Skip, we already have it
-                for (ServerSelectionList.Entry child : selectionList.children()) {
-                    if (child instanceof ServerPromotionEntry) {
-                        return;
-                    }
-                }
-
-                if (InfoFetcher.get().getPromotions().isEmpty()) {
-                    return;
-                }
-
-                // addFirst is not supported in java 17, we'll need to do it ourselves
-                selectionList.children().add(0, new ServerPromotionEntry(event.getGui()));
-            }
-        }
-    }
-
-    private static class ServerPromotionEntry extends ServerSelectionList.LanScanEntry {
+    public static class ServerPromotionEntry extends ServerSelectionList.LanScanEntry {
         final List<EntryOption> options = new ArrayList<>();
         private final Screen parent;
 

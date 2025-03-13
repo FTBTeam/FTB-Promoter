@@ -3,6 +3,7 @@ package dev.ftb.mods.promoter.screen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DownloadingTexture;
 import net.minecraft.client.renderer.texture.NativeImage;
+import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
@@ -15,8 +16,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.CompletableFuture;
@@ -24,8 +23,11 @@ import java.util.concurrent.CompletableFuture;
 public class AgentDownloadingTexture extends DownloadingTexture {
     private static final Logger LOGGER = LogManager.getLogger();
 
+    private final SimpleTexture fallbackSimpleTexture;
+
     public AgentDownloadingTexture(@Nullable File file, String url, ResourceLocation location, @Nullable Runnable onDownloadComplete) {
         super(file, url, location, false, onDownloadComplete);
+        this.fallbackSimpleTexture = new SimpleTexture(location);
     }
 
     /**
@@ -36,13 +38,9 @@ public class AgentDownloadingTexture extends DownloadingTexture {
         Minecraft.getInstance().execute(() -> {
             if (!this.uploaded) {
                 try {
-                    // get grandparent load.method to run aka. the super.super.load
-                    // Hacky reflection as java does not have a way to call super.super.method()
-                    Method topMostLoad = DownloadingTexture.class.getSuperclass().getDeclaredMethod("load", IResourceManager.class);
-                    topMostLoad.setAccessible(true);
-                    topMostLoad.invoke(this, manager);
-                } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException ioexception) {
-                    LOGGER.warn("Failed to load texture: {}", this.location, ioexception);
+                    this.fallbackSimpleTexture.load(manager);
+                } catch (IOException e) {
+                    LOGGER.error("Failed to load fallback texture", e);
                 }
 
                 this.uploaded = true;
