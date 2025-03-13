@@ -1,6 +1,10 @@
 package dev.ftb.mods.promoter.api;
 
+import dev.ftb.mods.promoter.api.requirements.Requirement;
+
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**

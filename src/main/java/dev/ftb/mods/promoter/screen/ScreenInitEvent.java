@@ -144,7 +144,7 @@ public class ScreenInitEvent {
 
             boolean overAnnouncement = false;
             if (data.announcement() != null && !data.announcement().isEmpty()) {
-                overAnnouncement = renderAnnouncement(graphics, x, y, width, data.announcement(), this.announcementTooltipLines, mouseX, mouseY);
+                overAnnouncement = renderAnnouncement(graphics, x, y, width, data.announcement(), this.announcementTooltipLines, mouseX, mouseY, false);
             }
 
             if (!this.entryTooltipLines.isEmpty() && !overAnnouncement) {
@@ -155,7 +155,13 @@ public class ScreenInitEvent {
         }
     }
 
-    public static boolean renderAnnouncement(GuiGraphics graphics, int x, int y, int width, String announcement, @Nullable List<Component> tooltipLines, int mouseX, int mouseY) {
+    public static boolean renderAnnouncement(GuiGraphics graphics, int x, int y, int width, String announcement, @Nullable List<Component> tooltipLines, int mouseX, int mouseY, boolean offset) {
+        boolean isOnlyPromo = InfoFetcher.get().getPromotions().size() == 1;
+
+        if (isOnlyPromo && offset) {
+            x -= 74;
+        }
+
         announcement = announcement.toUpperCase();
         Font font = Minecraft.getInstance().font;
         var textWidth = font.width(announcement);
