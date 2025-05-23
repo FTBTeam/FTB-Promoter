@@ -25,19 +25,17 @@ public abstract class Requirement {
                 throw new JsonParseException("Requirement must have a type");
             }
 
-
             String type = json.getAsJsonObject().get("type").getAsString();
             try {
-                switch (type) {
-                    case "minecraft_version":
-                        return MinecraftRequirement.deserialize(type, json, typeOfT, context);
-                    case "mod_loaded":
-                        return ModRequirement.deserialize(type, json, typeOfT, context);
-                    default:
+                return switch (type) {
+                    case "minecraft_version" -> MinecraftRequirement.deserialize(type, json, typeOfT, context);
+                    case "mod_loaded" -> ModRequirement.deserialize(type, json, typeOfT, context);
+                    default -> {
                         // Don't fatal if we don't know the requirement type
                         LOGGER.warn("Unsupported requirement type: {}", type);
-                        return null;
-                }
+                        yield null;
+                    }
+                };
             } catch (JsonParseException e) {
                 LOGGER.error("Failed to parse requirement of type {}", type, e);
                 return null;

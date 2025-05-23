@@ -27,6 +27,6 @@ public class FTBPromoter {
     }
 
     public void clientSetup(FMLClientSetupEvent event) {
-        PromoterClientInit.init();
+        PromoterClientInit.init(event);
     }
 }
