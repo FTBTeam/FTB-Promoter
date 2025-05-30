@@ -15,7 +15,7 @@ def buildNumber = project.providers.environmentVariable("BUILD_NUMBER").getOrEls
 version = version + "." + buildNumber
 
 base {
-    archivesName = mod_id
+    archivesName = "ftb-promoter"
 }
 
 apply from: "https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/publishing.gradle"
