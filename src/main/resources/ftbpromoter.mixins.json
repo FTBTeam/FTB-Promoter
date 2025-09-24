@@ -4,7 +4,8 @@
   "package": "dev.ftb.mods.promoter.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
-    "AbstractSelectionListMixin"
+    "AbstractSelectionListMixin",
+    "ServerSelectionListMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -16,6 +16,7 @@ base {
 }
 
 apply from: "https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/publishing.gradle"
+apply from: "https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/changelog.gradle"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
