@@ -27,7 +27,7 @@ public class Integrations {
         }
 
         if (ModList.get().isLoaded(FTB_WORLD_MOD_ID)) {
-            INTEGRATIONS.add(new FTBWorldsIntegration());
+//            INTEGRATIONS.add(new FTBWorldsIntegration());
         }
 
         if (ModList.get().isLoaded(FANCY_MENU_MOD_ID)) {

@@ -1,22 +1,23 @@
 package dev.ftb.mods.promoter.integrations.fancymenu;
 
-import de.keksuccino.fancymenu.customization.loadingrequirement.LoadingRequirement;
+import de.keksuccino.fancymenu.customization.requirement.Requirement;
 import de.keksuccino.fancymenu.util.rendering.ui.screen.texteditor.TextEditorFormattingRule;
 import dev.ftb.mods.promoter.FTBPromoter;
 import dev.ftb.mods.promoter.api.InfoFetcher;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
 
-public class PromoAvailableLoadingReq extends LoadingRequirement {
+public class PromoAvailableLoadingReq extends Requirement {
     private static final HashMap<String, Boolean> PROMO_AVAILABLE_CACHE = new HashMap<>();
 
     public PromoAvailableLoadingReq() {
         // Not a fan that this doesn't just use a resource location, but it's fine...
-        super(ResourceLocation.fromNamespaceAndPath(FTBPromoter.MOD_ID, "promo_available").toString().replace(":", "_"));
+        super(Identifier.fromNamespaceAndPath(FTBPromoter.MOD_ID, "promo_available").toString().replace(":", "_"));
     }
 
     @Override
@@ -38,23 +39,23 @@ public class PromoAvailableLoadingReq extends LoadingRequirement {
     }
 
     @Override
-    public @NotNull String getDisplayName() {
-        return "Is FTB Promotional Available";
+    public @NotNull Component getDisplayName() {
+        return Component.translatable("ftbpromoter.fancymenu.requirement.name");
     }
 
     @Override
-    public @Nullable List<String> getDescription() {
-        return List.of("Checks if a promo is available from the API.");
+    public @Nullable Component getDescription() {
+        return Component.translatable("ftbpromoter.fancymenu.requirement.description");
     }
 
     @Override
     public @Nullable String getCategory() {
-        return null;
+        return "FTB";
     }
 
     @Override
-    public @Nullable String getValueDisplayName() {
-        return "Promotion UUID";
+    public @Nullable Component getValueDisplayName() {
+        return Component.translatable("ftbpromoter.fancymenu.requirement.value.name");
     }
 
     @Override

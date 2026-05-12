@@ -3,9 +3,8 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'idea'
-    id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.8"
-    id 'net.neoforged.moddev' version '2.0.76'
-    id "me.modmuss50.mod-publish-plugin" version "0.8.3"
+    id 'net.neoforged.moddev' version '2.0.141'
+    id "me.modmuss50.mod-publish-plugin" version "1.1.0"
 }
 
 group = 'dev.ftb.mods'
@@ -15,29 +14,47 @@ base {
     archivesName = "ftb-promoter"
 }
 
-apply from: "https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/publishing.gradle"
-apply from: "https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/changelog.gradle"
+apply from: 'https://raw.githubusercontent.com/FTBTeam/mods-meta/v1/gradle/maven.gradle?v=1'
+apply from: 'https://raw.githubusercontent.com/FTBTeam/mods-meta/v1/gradle/publishing-2.gradle'
+apply from: 'https://raw.githubusercontent.com/FTBTeam/mods-meta/v1/gradle/utils.gradle'
+apply from: 'https://raw.githubusercontent.com/FTBTeam/mods-meta/v1/gradle/changelog.gradle'
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    options.release.set(25) // Compile for Java 25
+}
+
+version = createModVersion(project)
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
 }
 
 neoForge {
     version = project.mod_loader_version
 
-    parchment {
-        mappingsVersion = project.parchment_mappings_version
-        minecraftVersion = project.parchment_minecraft_version
-    }
-
-     accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
+    accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {
         client {
             client()
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        clientData {
+            clientData()
+
+            programArguments.addAll('--mod', project.mod_id, '--all',
+                    '--output', file('src/generated/client-resources/').absolutePath,
+                    '--existing', file('src/main/resources/').absolutePath)
         }
 
         configureEach {
@@ -58,29 +75,22 @@ configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets.main.resources { srcDir 'src/generated/client-resources' }
 
 repositories {
-    mavenCentral()
+    mavenLocal()
+    commonMavenRepos(repositories)
+
+
     maven {
-        url = "https://cursemaven.com"
+        name "ModMaven (JEI)"
+        url "https://modmaven.dev/"
         content {
-            includeGroup "curse.maven"
+            includeGroup "mezz.jei"
         }
     }
-    maven {
-        url = "https://maven.ftb.dev/releases"
-        content {
-            includeGroup("dev.ftb.mods")
-            includeGroup("net.rocketplatform.game.client.mod")
-        }
-    }
-    maven {
-        url = "https://maven.architectury.dev"
-        content {
-            includeGroup("dev.architectury")
-        }
-    }
+
+
     // flatfile libs
     flatDir(dir: 'libs')
 }
@@ -88,7 +98,7 @@ repositories {
 dependencies {
     implementation "curse.maven:bisecthosting-server-integration-menu-neoforge-1084468:${bisecthosting_version}"
 
-    implementation "net.rocketplatform.game.client.mod:rgp-client:${ftb_worlds_version}+mc${minecraft_version}"
+//    implementation "net.rocketplatform.game.client.mod:rgp-client:${ftb_worlds_version}"
     runtimeOnly "dev.ftb.mods:ftb-library-neoforge:${ftb_library_version}"
 
     implementation "curse.maven:fancymenu-367706:${fancy_menu_version}"
@@ -115,25 +125,6 @@ processResources {
     }
 }
 
-publishing {
-    publications {
-        register('mavenJava', MavenPublication) {
-            from components.java
-        }
-    }
-
-    repositories {
-        if (ftbPublishing.ftbToken) {
-            maven {
-                url ftbPublishing.ftbURL
-                credentials {
-                    username = ftbPublishing.ftbUser
-                    password = ftbPublishing.ftbToken
-                }
-            }
-        }
-    }
-}
 
 idea {
     module {
@@ -141,6 +132,8 @@ idea {
         downloadJavadoc = true
     }
 }
+
+createMavenPublishingBlock(project)
 
 publishMods {
     def cfToken = providers.environmentVariable("CURSEFORGE_KEY")
@@ -152,8 +145,7 @@ publishMods {
     displayName = "[NEOFORGE] FTB Promoter ${project.version}"
     modLoaders.add("neoforge")
 
-    def tag = providers.environmentVariable("TAG").getOrElse("release")
-    type = tag.endsWith("-beta") ? BETA : (tag.endsWith("-alpha") ? ALPHA : STABLE)
+    type = createReleaseType(project)
 
     curseforge {
         accessToken = cfToken.isPresent() ? cfToken.get() : ""

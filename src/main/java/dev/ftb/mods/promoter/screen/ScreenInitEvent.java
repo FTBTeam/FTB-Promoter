@@ -1,19 +1,23 @@
 package dev.ftb.mods.promoter.screen;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import dev.ftb.mods.promoter.api.InfoFetcher;
 import dev.ftb.mods.promoter.api.PromoData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.multiplayer.ServerSelectionList;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3x2fStack;
 
 import java.net.URI;
 import java.util.*;
@@ -49,6 +53,7 @@ public class ScreenInitEvent {
 
         public ServerPromotionEntry(Screen screen) {
             this.parent = screen;
+            this.setHeight(35);
 
             List<PromoData> promotions = InfoFetcher.get().getPromotions();
             if (promotions.isEmpty()) {
@@ -67,14 +72,18 @@ public class ScreenInitEvent {
         }
 
         @Override
-        public boolean mouseClicked(double p_331676_, double p_330254_, int p_331536_) {
+        public boolean mouseClicked(MouseButtonEvent event, boolean flag) {
             Minecraft.getInstance().setScreen(new AdScreen(this.parent));
             return false;
         }
 
         @Override
-        public void render(GuiGraphics guiGraphics, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovering, float partialTick) {
-            var halfWidth = width / 2;
+        public void extractContent(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, boolean hovering, float partialTick) {
+            var width = this.getContentWidth();
+            var height = this.getContentHeight();
+            var halfWidth = this.getContentWidth() / 2;
+            var left = this.getContentX();
+            var top = this.getContentY();
 
             if (isMouseOver(mouseX, mouseY)) {
                 guiGraphics.fill(left - 2, top, left + width - 4, top + height, 0x30FFFFFF);
@@ -123,23 +132,23 @@ public class ScreenInitEvent {
             return components;
         }
 
-        public void render(GuiGraphics graphics, int x, int y, int mouseX, int mouseY, int width, int height) {
-            graphics.drawString(Minecraft.getInstance().font, data.name(), x + 35, y + 2, 0xFFFFFF);
+        public void render(GuiGraphicsExtractor graphics, int x, int y, int mouseX, int mouseY, int width, int height) {
+            graphics.text(Minecraft.getInstance().font, data.name(), x + 35, y + 2, 0xFFFFFFFF);
 
             if (data.lineOneSubtitle() != null && !data.lineOneSubtitle().isEmpty()) {
                 var pose = graphics.pose();
-                pose.pushPose();
-                pose.translate(x + 35, y + 14, 0);
-                pose.scale(0.75f, 0.75f, 0.75f);
-                graphics.drawString(Minecraft.getInstance().font, data.lineOneSubtitle(), 0, 0, 0xB2FFFFFF);
+                pose.pushMatrix();
+                pose.translate(x + 35, y + 14);
+                pose.scale(0.75f, 0.75f);
+                graphics.text(Minecraft.getInstance().font, data.lineOneSubtitle(), 0, 0, 0xB2FFFFFF);
                 if (data.lineTwoSubtitle() != null && !data.lineTwoSubtitle().isEmpty()) {
-                    pose.translate(0, 12, 0);
-                    graphics.drawString(Minecraft.getInstance().font, data.lineTwoSubtitle(), 0, 0, 0xB2FFFFFF);
+                    pose.translate(0, 12);
+                    graphics.text(Minecraft.getInstance().font, data.lineTwoSubtitle(), 0, 0, 0xB2FFFFFF);
                 }
-                pose.popPose();
+                pose.popMatrix();
             }
 
-            graphics.blit(texture.getTextureLocation(), x, y + 1, 0, 0, 30, 30, 30, 30);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, texture.getTextureLocation(), x, y, 0, 0, 30, 30, 30, 30, 30, 30);
 
             boolean overAnnouncement = false;
             if (data.announcement() != null && !data.announcement().isEmpty()) {
@@ -148,13 +157,13 @@ public class ScreenInitEvent {
 
             if (!this.entryTooltipLines.isEmpty() && !overAnnouncement) {
                 if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
-                    graphics.renderTooltip(Minecraft.getInstance().font, this.entryTooltipLines, Optional.empty(), mouseX, mouseY + 10);
+                    graphics.tooltip(Minecraft.getInstance().font, this.entryTooltipLines.stream().map(e -> ClientTooltipComponent.create(e.getVisualOrderText())).toList(), mouseX, mouseY + 10, DefaultTooltipPositioner.INSTANCE, null);
                 }
             }
         }
     }
 
-    public static boolean renderAnnouncement(GuiGraphics graphics, int x, int y, int width, String announcement, @Nullable List<Component> tooltipLines, int mouseX, int mouseY, boolean offset) {
+    public static boolean renderAnnouncement(GuiGraphicsExtractor graphics, int x, int y, int width, String announcement, @Nullable List<Component> tooltipLines, int mouseX, int mouseY, boolean offset) {
         boolean isOnlyPromo = InfoFetcher.get().getPromotions().size() == 1;
 
         if (isOnlyPromo && offset) {
@@ -172,22 +181,22 @@ public class ScreenInitEvent {
         var paddingY = 2;
         var textHeight = 8;
 
-        PoseStack pose = graphics.pose();
+        Matrix3x2fStack pose = graphics.pose();
         // Put the text on top of everything
-        pose.pushPose();
-        pose.translate(textX, textY, 100);
-        pose.scale(0.6f, 0.6f, 0.6f);
+        pose.pushMatrix();
+        pose.translate(textX, textY);
+        pose.scale(0.6f, 0.6f);
         graphics.fill(-paddingX - borderSize, -paddingY - borderSize, textWidth + paddingX + borderSize, textHeight + paddingY + borderSize, 0x80965222);
         graphics.fill(-paddingX, -paddingY, textWidth + paddingX, textHeight + paddingY, 0xFFEE883F);
 
-        graphics.drawString(font, announcement, 0, 0, 0xFFFFFF);
-        pose.popPose();
+        graphics.text(font, announcement, 0, 0, 0xFFFFFFFF);
+        pose.popMatrix();
 
         boolean overAnnouncement = false;
         if (tooltipLines != null && !tooltipLines.isEmpty()) {
             if (mouseX >= (textX - paddingX) && mouseX <= textX + ((textWidth + (paddingX * 2)) * 0.6F) && mouseY >= textY && mouseY <= textY + textHeight) {
                 overAnnouncement = true;
-                graphics.renderTooltip(font, tooltipLines, Optional.empty(), mouseX, mouseY + 10);
+                graphics.tooltip(font, tooltipLines.stream().map(e -> ClientTooltipComponent.create(e.getVisualOrderText())).toList(), mouseX, mouseY + 10, DefaultTooltipPositioner.INSTANCE, null);
             }
         }
 
