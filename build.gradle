@@ -4,19 +4,25 @@ plugins {
     id 'maven-publish'
     id 'idea'
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.8"
-    id 'net.neoforged.moddev' version '2.0.76'
-    id "me.modmuss50.mod-publish-plugin" version "0.8.3"
+    id 'net.neoforged.moddev' version '2.0.141'
+    id "me.modmuss50.mod-publish-plugin" version "1.1.0"
 }
-
-group = 'dev.ftb.mods'
-version = mod_version
 
 base {
     archivesName = "ftb-promoter"
 }
 
-apply from: "https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/publishing.gradle"
-apply from: "https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/changelog.gradle"
+apply from: 'https://raw.githubusercontent.com/FTBTeam/mods-meta/v1/gradle/maven.gradle?v=1'
+apply from: 'https://raw.githubusercontent.com/FTBTeam/mods-meta/v1/gradle/publishing-2.gradle'
+apply from: 'https://raw.githubusercontent.com/FTBTeam/mods-meta/v1/gradle/utils.gradle'
+apply from: 'https://raw.githubusercontent.com/FTBTeam/mods-meta/v1/gradle/changelog.gradle'
+
+version = createModVersion(project)
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
@@ -32,12 +38,25 @@ neoForge {
         minecraftVersion = project.parchment_minecraft_version
     }
 
-     accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
+    accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {
         client {
             client()
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        data {
+            data()
+
+            programArguments.addAll('--mod', project.mod_id, '--all',
+                    '--output', file('src/generated/resources/').absolutePath,
+                    '--existing', file('src/main/resources/').absolutePath)
         }
 
         configureEach {
@@ -61,13 +80,9 @@ configurations {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
-    mavenCentral()
-    maven {
-        url = "https://cursemaven.com"
-        content {
-            includeGroup "curse.maven"
-        }
-    }
+    mavenLocal()
+    commonMavenRepos(repositories)
+
     maven {
         url = "https://maven.ftb.dev/releases"
         content {
@@ -75,6 +90,7 @@ repositories {
             includeGroup("net.rocketplatform.game.client.mod")
         }
     }
+
     maven {
         url = "https://maven.architectury.dev"
         content {
@@ -115,25 +131,7 @@ processResources {
     }
 }
 
-publishing {
-    publications {
-        register('mavenJava', MavenPublication) {
-            from components.java
-        }
-    }
-
-    repositories {
-        if (ftbPublishing.ftbToken) {
-            maven {
-                url ftbPublishing.ftbURL
-                credentials {
-                    username = ftbPublishing.ftbUser
-                    password = ftbPublishing.ftbToken
-                }
-            }
-        }
-    }
-}
+createMavenPublishingBlock(project)
 
 idea {
     module {
@@ -147,13 +145,12 @@ publishMods {
 
     dryRun = !cfToken.isPresent()
     changelog = createChangelog(project)
-    version = mod_version
+    version = project.version
     file = jar.archiveFile
-    displayName = "[NEOFORGE] FTB Promoter ${project.version}"
+    displayName = "FTB Promoter NeoForge ${project.version}"
     modLoaders.add("neoforge")
 
-    def tag = providers.environmentVariable("TAG").getOrElse("release")
-    type = tag.endsWith("-beta") ? BETA : (tag.endsWith("-alpha") ? ALPHA : STABLE)
+    type = createReleaseType(project)
 
     curseforge {
         accessToken = cfToken.isPresent() ? cfToken.get() : ""
