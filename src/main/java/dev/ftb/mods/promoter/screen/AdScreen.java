@@ -11,6 +11,7 @@ import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 
 import java.net.URI;
@@ -116,7 +117,8 @@ public class AdScreen extends Screen {
     private void renderSection(PromoDataHolder holder, GuiGraphicsExtractor guiGraphics, int x, int width, int mouseX, int mouseY) {
         var data = holder.getData();
 
-        guiGraphics.blit(holder.getLogo().getTextureLocation(), x + width / 2 - 15, 10, 0, 0, 30, 30, 30, 30);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, holder.getLogo().getTextureLocation(), x + width / 2 - 15, 10, 0, 0, 30, 30, 30, 30, 30, 30);
+//        guiGraphics.blit(holder.getLogo().getTextureLocation(), x + width / 2 - 15, 10, 0, 0, 30, 30, 30, 30);
         guiGraphics.centeredText(Minecraft.getInstance().font, data.name(), x + width / 2, 50, 0xFFFFFF);
 
         var description = holder.getDescription();
