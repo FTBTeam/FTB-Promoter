@@ -54,4 +54,8 @@ public class Integrations {
 
         return false;
     }
+
+    public static boolean isZeroIndexAlreadyPatched() {
+        return ModList.get().isLoaded(BISECTHOSTING_MOD_ID);
+    }
 }

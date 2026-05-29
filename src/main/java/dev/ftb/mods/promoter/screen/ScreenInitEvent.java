@@ -43,7 +43,7 @@ public class ScreenInitEvent {
         }
     }
 
-    public static class ServerPromotionEntry extends ServerSelectionList.LANHeader {
+    public static class ServerPromotionEntry extends ServerSelectionList.Entry {
         final List<EntryOption> options = new ArrayList<>();
         private final Screen parent;
 
