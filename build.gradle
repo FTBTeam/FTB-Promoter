@@ -5,7 +5,7 @@ plugins {
     id 'idea'
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.8"
     id 'net.neoforged.moddev' version '2.0.141'
-    id "me.modmuss50.mod-publish-plugin" version "1.1.0"
+    id "me.modmuss50.mod-publish-plugin" version "2.1.1"
 }
 
 base {
@@ -160,5 +160,8 @@ publishMods {
 
         optional('fancymenu')
         optional('bisecthosting-server-integration-menu-neoforge')
+
+        client = true
+        server = false
     }
 }
