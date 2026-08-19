@@ -1,5 +1,6 @@
 package dev.ftb.mods.promoter.integrations;
 
+import com.bisecthosting.mods.bhmenu.ModRoot;
 import com.bisecthosting.mods.bhmenu.modules.servercreatorbanner.screens.BHOrderScreen;
 import com.bisecthosting.mods.bhmenu.modules.servercreatorbanner.screens.BannerEntry;
 import dev.ftb.mods.promoter.api.PromoData;
@@ -21,5 +22,10 @@ public class BisectHostingIntegration implements Integration {
 
         Minecraft.getInstance().setScreen(new BHOrderScreen(parent));
         return true;
+    }
+
+    @Override
+    public boolean patchesZeroIndex() {
+        return ModRoot.get().modules.serverCreatorBanner.isEnabled();
     }
 }

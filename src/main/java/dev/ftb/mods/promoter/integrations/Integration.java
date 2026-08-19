@@ -8,4 +8,6 @@ public interface Integration {
     <E extends AbstractSelectionList.Entry<E>> boolean filterServerListEntry(E entry);
 
     boolean clickAction(PromoData data, Screen parent);
+
+    boolean patchesZeroIndex();
 }

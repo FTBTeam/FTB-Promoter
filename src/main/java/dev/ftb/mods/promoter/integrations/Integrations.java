@@ -9,6 +9,7 @@ import net.neoforged.fml.ModList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 public class Integrations {
     public static final String BISECTHOSTING_MOD_ID = "bhmenu";
@@ -36,26 +37,24 @@ public class Integrations {
     }
 
     public static <E extends AbstractSelectionList.Entry<E>> boolean denyEntry(E entry) {
-        for (Integration integration : INTEGRATIONS) {
-            if (integration.filterServerListEntry(entry)) {
-                return true;
-            }
-        }
-
-        return false;
+        return testIntegrations(integration -> integration.filterServerListEntry(entry));
     }
 
     public static boolean clickAction(PromoData data, Screen parent) {
+        return testIntegrations(integration -> integration.clickAction(data, parent));
+    }
+
+    public static boolean isZeroIndexAlreadyPatched() {
+        return testIntegrations(Integration::patchesZeroIndex);
+    }
+
+    private static boolean testIntegrations(Predicate<Integration> test) {
         for (Integration integration : INTEGRATIONS) {
-            if (integration.clickAction(data, parent)) {
+            if (test.test(integration)) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    public static boolean isZeroIndexAlreadyPatched() {
-        return ModList.get().isLoaded(BISECTHOSTING_MOD_ID);
     }
 }

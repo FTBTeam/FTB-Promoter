@@ -26,4 +26,9 @@ public class FTBWorldsIntegration implements Integration {
         fakeButtonHolder.onPress();
         return true;
     }
+
+    @Override
+    public boolean patchesZeroIndex() {
+        return false;
+    }
 }
