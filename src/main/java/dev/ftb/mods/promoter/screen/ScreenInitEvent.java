@@ -83,7 +83,7 @@ public class ScreenInitEvent {
         }
 
         @Override
-        boolean matches(ServerSelectionList.Entry var1) {
+        public boolean matches(ServerSelectionList.Entry var1) {
             return false;
         }
 
