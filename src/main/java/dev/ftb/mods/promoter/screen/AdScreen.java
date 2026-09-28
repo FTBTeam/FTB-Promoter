@@ -4,12 +4,14 @@ import dev.ftb.mods.promoter.api.InfoFetcher;
 import dev.ftb.mods.promoter.api.PromoData;
 import dev.ftb.mods.promoter.integrations.Integrations;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 
 import java.net.URI;
@@ -81,8 +83,8 @@ public class AdScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+    public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.extractBackground(guiGraphics, mouseX, mouseY, partialTick);
         // TOD Render backgrounds
         var availableWidth = getAvailableWidth(promos);
         var middle = this.width / 2;
@@ -95,8 +97,8 @@ public class AdScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
 
         var availableWidth = getAvailableWidth(promos);
         var middle = this.width / 2 - 2;
@@ -112,14 +114,15 @@ public class AdScreen extends Screen {
         return promos.size() > 1 ? 154 : 308;
     }
 
-    private void renderSection(PromoDataHolder holder, GuiGraphics guiGraphics, int x, int width, int mouseX, int mouseY) {
+    private void renderSection(PromoDataHolder holder, GuiGraphicsExtractor guiGraphics, int x, int width, int mouseX, int mouseY) {
         var data = holder.getData();
 
-        guiGraphics.blit(holder.getLogo().getTextureLocation(), x + width / 2 - 15, 10, 0, 0, 30, 30, 30, 30);
-        guiGraphics.drawCenteredString(Minecraft.getInstance().font, data.name(), x + width / 2, 50, 0xFFFFFF);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, holder.getLogo().getTextureLocation(), x + width / 2 - 15, 10, 0, 0, 30, 30, 30, 30, 30, 30);
+//        guiGraphics.blit(holder.getLogo().getTextureLocation(), x + width / 2 - 15, 10, 0, 0, 30, 30, 30, 30);
+        guiGraphics.centeredText(Minecraft.getInstance().font, data.name(), x + width / 2, 50, 0xFFFFFF);
 
         var description = holder.getDescription();
-        description.get(width - 4).renderLeftAligned(guiGraphics, x + 8, 70, 10, 0xFFFFFF);
+        description.get(width - 4).visitLines(TextAlignment.LEFT, x + 8, 70, 10, guiGraphics.textRenderer());
 
         String announcement = data.announcement();
         if (announcement != null && !announcement.isEmpty()) {
@@ -127,7 +130,7 @@ public class AdScreen extends Screen {
         }
     }
 
-    private void renderSectionBackground(PromoDataHolder holder, GuiGraphics guiGraphics, int x, int width) {
+    private void renderSectionBackground(PromoDataHolder holder, GuiGraphicsExtractor guiGraphics, int x, int width) {
         guiGraphics.fill(x, 0, x + width, this.height, 0x09FFFFFF);
         guiGraphics.fill(x + 2, 0, x + width - 2, this.height, 0x80000000);
     }

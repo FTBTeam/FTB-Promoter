@@ -5,7 +5,7 @@ import de.keksuccino.fancymenu.util.rendering.ui.screen.texteditor.TextEditorFor
 import dev.ftb.mods.promoter.FTBPromoter;
 import dev.ftb.mods.promoter.api.InfoFetcher;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,7 +17,7 @@ public class PromoAvailableLoadingReq extends Requirement {
 
     public PromoAvailableLoadingReq() {
         // Not a fan that this doesn't just use a resource location, but it's fine...
-        super(ResourceLocation.fromNamespaceAndPath(FTBPromoter.MOD_ID, "promo_available").toString().replace(":", "_"));
+        super(Identifier.fromNamespaceAndPath(FTBPromoter.MOD_ID, "promo_available").toString().replace(":", "_"));
     }
 
     @Override
@@ -50,7 +50,7 @@ public class PromoAvailableLoadingReq extends Requirement {
 
     @Override
     public @Nullable String getCategory() {
-        return null;
+        return "FTB";
     }
 
     @Override

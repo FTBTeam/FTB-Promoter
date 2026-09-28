@@ -1,5 +1,6 @@
 package dev.ftb.mods.promoter.integrations.fancymenu;
 
+
 import de.keksuccino.fancymenu.customization.requirement.RequirementRegistry;
 
 public class FancyMenuIntegration {

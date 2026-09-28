@@ -26,6 +26,6 @@ public class BisectHostingIntegration implements Integration {
 
     @Override
     public boolean patchesZeroIndex() {
-        return ModRoot.get().modules.serverCreatorBanner.isEnabled();
+        return ModRoot.get().clientModRoot.modules.serverCreatorBanner.isEnabled();
     }
 }

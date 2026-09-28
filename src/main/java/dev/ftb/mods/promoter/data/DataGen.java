@@ -7,13 +7,12 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
-@EventBusSubscriber(modid = FTBPromoter.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = FTBPromoter.MOD_ID)
 public class DataGen {
     @SubscribeEvent
-    public static void gatherData(GatherDataEvent event) {
+    public static void gatherData(GatherDataEvent.Client event) {
         var generator = event.getGenerator();
-
-        generator.addProvider(true, new LangGen(generator.getPackOutput()));
+        event.createProvider(LangGen::new);
     }
 
     public static class LangGen extends LanguageProvider {

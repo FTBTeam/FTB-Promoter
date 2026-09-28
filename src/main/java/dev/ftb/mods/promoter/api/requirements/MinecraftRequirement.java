@@ -20,7 +20,7 @@ public class MinecraftRequirement extends Requirement {
 
     @Override
     public boolean test(PromoData data) {
-        String minecraftVersion = SharedConstants.getCurrentVersion().getId();
+        String minecraftVersion = SharedConstants.getCurrentVersion().id();
 
         if (this.invert) {
             for (String version : versions) {

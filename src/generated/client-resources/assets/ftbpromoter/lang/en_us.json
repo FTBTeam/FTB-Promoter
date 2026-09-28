@@ -1,0 +1,5 @@
+{
+  "ftbpromoter.fancymenu.requirement.description": "Checks if a promo is available from the API.",
+  "ftbpromoter.fancymenu.requirement.name": "Is FTB Promoter Available",
+  "ftbpromoter.fancymenu.requirement.value.name": "Promotion UUID"
+}

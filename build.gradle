@@ -5,38 +5,55 @@ plugins {
     id 'idea'
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.8"
     id 'net.neoforged.moddev' version '2.0.141'
-    id "me.modmuss50.mod-publish-plugin" version "2.1.1"
+    id "me.modmuss50.mod-publish-plugin" version "2.2.0"
+    id "dev.ftb.plugins.ashwing" version "0.2.2"
+}
+
+ashwing {
+    modName = "FTB Promoter"
+    modId = project.mod_id
+
+    publishing {
+        curseForgeToken = providers.environmentVariable("CURSEFORGE_KEY").getOrNull()
+
+        forClientAndServer()
+        releaseFromString(providers.environmentVariable("TAG").getOrElse(""))
+        minecraftVersion(project.minecraft_version)
+
+        withMaven()
+
+        modProject {
+            fileFromTask(project, "jar")
+
+            modLoader = "neoforge"
+            curseForgeId = project.curseforge_id.toInteger()
+
+            optional('fancymenu')
+            optional('bisecthosting-server-integration-menu-neoforge')
+        }
+    }
 }
 
 base {
     archivesName = "ftb-promoter"
 }
 
-apply from: 'https://raw.githubusercontent.com/FTBTeam/mods-meta/v1/gradle/maven.gradle?v=1'
-apply from: 'https://raw.githubusercontent.com/FTBTeam/mods-meta/v1/gradle/publishing-2.gradle'
-apply from: 'https://raw.githubusercontent.com/FTBTeam/mods-meta/v1/gradle/utils.gradle'
-apply from: 'https://raw.githubusercontent.com/FTBTeam/mods-meta/v1/gradle/changelog.gradle'
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
-version = createModVersion(project)
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    options.release.set(25) // Compile for Java 25
+}
+
+version = ashwing.utils().createNeoLikeVersion(project.minecraft_version, project.mod_version)
 group = project.maven_group
 
 base {
     archivesName = project.archives_base_name
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
-}
-
 neoForge {
     version = project.mod_loader_version
-
-    parchment {
-        mappingsVersion = project.parchment_mappings_version
-        minecraftVersion = project.parchment_minecraft_version
-    }
 
     accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -52,7 +69,7 @@ neoForge {
         }
 
         data {
-            data()
+            clientData()
 
             programArguments.addAll('--mod', project.mod_id, '--all',
                     '--output', file('src/generated/resources/').absolutePath,
@@ -77,34 +94,25 @@ configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets.main.resources { srcDir 'src/generated/client-resources' }
 
 repositories {
+    mavenCentral()
     mavenLocal()
-    commonMavenRepos(repositories)
 
-    maven {
-        url = "https://maven.ftb.dev/releases"
-        content {
-            includeGroup("dev.ftb.mods")
-            includeGroup("net.rocketplatform.game.client.mod")
-        }
+    def repos = ashwing.repos(project)
+    repos.ftb()
+    repos.ftbSnapshots()
+    repos.curseMaven()
+    repos.modmaven {
+        it.includeGroup("mezz.jei")
     }
-
-    maven {
-        url = "https://maven.architectury.dev"
-        content {
-            includeGroup("dev.architectury")
-        }
-    }
-    // flatfile libs
-    flatDir(dir: 'libs')
 }
 
 dependencies {
     implementation "curse.maven:bisecthosting-server-integration-menu-neoforge-1084468:${bisecthosting_version}"
 
-    implementation "net.rocketplatform.game.client.mod:rgp-client:${ftb_worlds_version}+mc${minecraft_version}"
+//    implementation "net.rocketplatform.game.client.mod:rgp-client:${ftb_worlds_version}"
     runtimeOnly "dev.ftb.mods:ftb-library-neoforge:${ftb_library_version}"
 
     implementation "curse.maven:fancymenu-367706:${fancy_menu_version}"
@@ -131,37 +139,9 @@ processResources {
     }
 }
 
-createMavenPublishingBlock(project)
-
 idea {
     module {
         downloadSources = true
         downloadJavadoc = true
-    }
-}
-
-publishMods {
-    def cfToken = providers.environmentVariable("CURSEFORGE_KEY")
-
-    dryRun = !cfToken.isPresent()
-    changelog = createChangelog(project)
-    version = project.version
-    file = jar.archiveFile
-    displayName = "FTB Promoter NeoForge ${project.version}"
-    modLoaders.add("neoforge")
-
-    type = createReleaseType(project)
-
-    curseforge {
-        accessToken = cfToken.isPresent() ? cfToken.get() : ""
-        minecraftVersions.add(minecraft_version)
-
-        projectId = curseforge_id
-
-        optional('fancymenu')
-        optional('bisecthosting-server-integration-menu-neoforge')
-
-        client = true
-        server = false
     }
 }
